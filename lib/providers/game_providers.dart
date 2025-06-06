@@ -4,11 +4,19 @@ import 'dart:math';
 import 'dart:async';
 
 enum GameState {
-  initial, // Added an initial state before ready
   ready,
   playing,
   gameOver,
 }
+
+// Define directions
+enum Direction { 
+  right, 
+  left, 
+  up, 
+  down 
+}
+
 
 final scoreProvider = StateProvider<int>((ref) => 0);
 
@@ -18,6 +26,14 @@ final currentWordProvider = StateProvider<Map<String, Color>>((ref) => {}); // I
 
 final gameStateProvider = StateProvider<GameState>((ref) => GameState.ready);
 
+
+// Mapping of colors to directions
+final Map<Color, Direction> colorDirectionMap = {
+  Colors.red: Direction.right,
+  Colors.green: Direction.left,
+  Colors.blue: Direction.up,
+  Colors.yellow: Direction.down,
+};
 // Define the possible words and colors
 final List<String> words = ['RED', 'GREEN', 'BLUE', 'YELLOW'];
 final List<Color> colors = [Colors.red, Colors.green, Colors.blue, Colors.yellow];
@@ -59,22 +75,41 @@ final gameLogicProvider = Provider((ref) {
       gameStateNotifier.state = GameState.gameOver;
   }
 
+  void checkAnswer(Direction inputDirection) {
+    if (gameStateNotifier.state != GameState.playing) return;
+
+    final currentWordEntry = currentWordNotifier.state;
+    if (currentWordEntry.isEmpty) return;
+
+    final inkColor = currentWordEntry.values.first;
+    final correctDirection = colorDirectionMap[inkColor];
+
+    if (inputDirection == correctDirection) {
+      scoreNotifier.state++;
+      timerNotifier.state = timerNotifier.state + 2 > 30 ? 30 : timerNotifier.state + 2; // Add 2 seconds bonus, max 30
+    } else {
+      timerNotifier.state = timerNotifier.state - 1 < 0 ? 0 : timerNotifier.state - 1; // Subtract 1 second penalty, min 0
+    }
+
+    generateNewWord(); // Generate a new word after each answer
+  }
+
   // Add other game logic methods here (e.g., checkAnswer)
 
   return GameLogic(
     startGame: startGame,
     generateNewWord: generateNewWord,
     stopGame: stopGame,
-    // Expose other methods
+    checkAnswer: checkAnswer,
   );
 });
 
-// Simple class to hold game logic functions
+// Class to hold game logic functions
 class GameLogic {
   final VoidCallback startGame;
   final VoidCallback generateNewWord;
-  final VoidCallback stopGame;
-  // Add other function types
+  final VoidCallback stopGame; // Consider making this accept a parameter if needed for final score handling
+  final void Function(Direction) checkAnswer;
 
-  GameLogic({required this.startGame, required this.generateNewWord, required this.stopGame});
+  GameLogic({required this.startGame, required this.generateNewWord, required this.stopGame, required this.checkAnswer});
 }
