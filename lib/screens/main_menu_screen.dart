@@ -9,7 +9,6 @@ class MainMenuScreen extends ConsumerWidget {
   const MainMenuScreen({super.key});
 
   @override
-  @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: Container(
@@ -30,14 +29,14 @@ class MainMenuScreen extends ConsumerWidget {
               Text(
                 'STROOP',
                 style: GoogleFonts.inter(
-                  fontSize: 80.0,
+                  fontSize: MediaQuery.of(context).orientation == Orientation.portrait ? 60.0 : 80.0,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
                   letterSpacing: 5.0,
                   shadows: [
                     Shadow(
                       blurRadius: 10.0,
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       offset: const Offset(5.0, 5.0),
                     ),
                   ],
@@ -46,7 +45,7 @@ class MainMenuScreen extends ConsumerWidget {
               Text(
                 'GAME',
                 style: GoogleFonts.inter(
-                  fontSize: 40.0,
+                  fontSize: MediaQuery.of(context).orientation == Orientation.portrait ? 30.0 : 40.0,
                   fontWeight: FontWeight.w500,
                   color: Colors.white70,
                   letterSpacing: 3.0,
@@ -54,7 +53,9 @@ class MainMenuScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 80),
 
-              ElevatedButton(
+              _MenuButton(
+                text: 'Start Game',
+                color: const Color(0xFF2ECC71),
                 onPressed: () {
                   // Reset game state providers
                   ref.read(scoreProvider.notifier).state = 0;
@@ -63,52 +64,55 @@ class MainMenuScreen extends ConsumerWidget {
                   ref.read(gameStateProvider.notifier).state = GameState.ready;
 
                   Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const GameScreen(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const GameScreen()),
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2ECC71), // Emerald green
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(
-                  'Start Game',
-                  style: GoogleFonts.inter(
-                    fontSize: 24.0,
-                    color: Colors.white,
-                  ),
-                ),
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
+              _MenuButton(
+                text: 'Instructions',
+                color: const Color(0xFF2196F3),
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const InstructionsScreen(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const InstructionsScreen()),
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2196F3), // Primary color
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(
-                  'Instructions',
-                  style: GoogleFonts.inter(
-                    fontSize: 24.0,
-                    color: Colors.white,
-                  ),
-                ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuButton extends StatelessWidget {
+  final String text;
+  final Color color;
+  final VoidCallback onPressed;
+
+  const _MenuButton({
+    required this.text,
+    required this.color,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.inter(
+          fontSize: MediaQuery.of(context).orientation == Orientation.portrait ? 20.0 : 24.0,
+          color: Colors.white,
         ),
       ),
     );
