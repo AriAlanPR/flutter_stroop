@@ -47,6 +47,11 @@ final gameLogicProvider = Provider((ref) {
 
   Timer? gameTimer;
 
+  // Dispose the timer when the provider is disposed
+  ref.onDispose(() {
+    gameTimer?.cancel();
+  });
+
   void generateNewWord() {
     final random = Random();
     final word = words[random.nextInt(words.length)];
@@ -55,6 +60,9 @@ final gameLogicProvider = Provider((ref) {
   }
 
   void startGame() {
+    gameTimer?.cancel(); // Cancel any existing timer
+    gameTimer = null; // Ensure the reference is cleared
+
     gameStateNotifier.state = GameState.playing;
     scoreNotifier.state = 0;
     timerNotifier.state = 30; // Reset timer
@@ -65,6 +73,7 @@ final gameLogicProvider = Provider((ref) {
         timerNotifier.state--;
       } else {
         gameTimer?.cancel();
+        gameTimer = null; // Clear reference after cancellation
         gameStateNotifier.state = GameState.gameOver;
       }
     });
@@ -72,6 +81,7 @@ final gameLogicProvider = Provider((ref) {
 
   void stopGame() {
       gameTimer?.cancel();
+      gameTimer = null; // Clear reference after cancellation
       gameStateNotifier.state = GameState.gameOver;
   }
 

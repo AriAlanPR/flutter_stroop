@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:async'; // Import for Timer
+
 import 'package:myapp/providers/game_providers.dart'; // Import your providers
 import 'package:flutter/services.dart'; // Import for keyboard input
 
@@ -13,13 +13,6 @@ class GameScreen extends ConsumerStatefulWidget {
 }
 
 class _GameScreenState extends ConsumerState<GameScreen> {
-  Timer? _timer; // Declare the timer
-
-  @override
-  void dispose() {
-    _timer?.cancel(); // Cancel the timer in dispose
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,12 +28,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       });
     }
 
-    // Implement timer logic when the game is playing
-    if (gameState == GameState.playing) {
-      _startTimer();
-    } else {
-      _timer?.cancel(); // Cancel timer if game is not playing
-    }
+
 
 
     // Wrap the Scaffold with KeyboardListener
@@ -126,7 +114,30 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   children: [
                     Text('Game Over!', style: GoogleFonts.inter(fontSize: 48.0)),
                     Text('Final Score: $score', style: GoogleFonts.inter(fontSize: 24.0)),
-                    // Add accuracy and encouraging message later
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        ref.read(scoreProvider.notifier).state = 0;
+                        ref.read(timerProvider.notifier).state = 30;
+                        ref.read(currentWordProvider.notifier).state = {};
+                        ref.read(gameStateProvider.notifier).state = GameState.ready;
+                        ref.read(gameLogicProvider).startGame();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2ECC71),
+                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(
+                        'Restart Game',
+                        style: GoogleFonts.inter(
+                          fontSize: 20.0,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -137,15 +148,5 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     );
   }
 
-  void _startTimer() {
-    _timer?.cancel(); // Cancel any existing timer
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (ref.read(timerProvider.notifier).state > 0) {
-        ref.read(timerProvider.notifier).state--;
-      } else {
-        _timer?.cancel();
-        ref.read(gameStateProvider.notifier).state = GameState.gameOver;
-      }
-    });
-  }
+
 }
