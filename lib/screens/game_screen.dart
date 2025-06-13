@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:myapp/providers/game_providers.dart'; // Import your providers
+import 'package:stroop/providers/game_providers.dart'; // Import your providers
 import 'package:flutter/services.dart'; // Import for keyboard input
 
 class GameScreen extends ConsumerStatefulWidget {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:myapp/screens/main_menu_screen.dart';
+import 'package:stroop/screens/main_menu_screen.dart';
 
 void main() {
   runApp(

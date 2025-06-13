@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:myapp/providers/game_providers.dart';
-import 'package:myapp/screens/game_screen.dart';
-import 'package:myapp/screens/instructions_screen.dart';
+import 'package:stroop/providers/game_providers.dart';
+import 'package:stroop/screens/game_screen.dart';
+import 'package:stroop/screens/instructions_screen.dart';
 
 class MainMenuScreen extends ConsumerWidget {
   const MainMenuScreen({super.key});
