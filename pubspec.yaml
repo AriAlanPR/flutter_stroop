@@ -41,12 +41,13 @@ dependencies:
 
 flutter_native_splash:
   color: "#ffffff"
-  image: lib/assets/images/splash.jpeg
+  image: lib/assets/images/splash.png
 
-flutter_icons:
+flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "lib/assets/images/launcher.jpeg"
+  image_path: "lib/assets/images/launcher.png"
+  remove_alpha_ios: true
 
 dev_dependencies:
   flutter_test:
