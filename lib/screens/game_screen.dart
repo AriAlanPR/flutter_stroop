@@ -71,6 +71,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             onVerticalDragEnd: (details) {
               if (details.primaryVelocity! > 0) {
                 // Swipe Down
+                ref.read(gameLogicProvider).checkAnswer(Direction.down);
               } else if (details.primaryVelocity! < 0) {
                 // Swipe Up
                 ref.read(gameLogicProvider).checkAnswer(Direction.up);
