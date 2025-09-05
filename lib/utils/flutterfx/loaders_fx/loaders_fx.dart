@@ -1,5 +1,5 @@
 import 'dart:math' as math;
-import 'package:stroop/utils/flutterfx/app_pallet.dart';
+import 'package:stroop/utils/app_pallet.dart';
 import 'package:flutter/material.dart';
 import 'package:stroop/utils/flutterfx/loaders_fx/animations/animation_strategy.dart';
 
