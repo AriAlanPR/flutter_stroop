@@ -1,0 +1,70 @@
+import 'package:flutter/material.dart';
+
+class AppPallet {
+  AppPallet._();
+
+  static const int opaque = 255;
+  static const int transparency = 10;
+
+  //Pallete of colors used in the app
+  static const loginBackground = Color.fromARGB(opaque, 211, 214, 221);
+  static const loginButton = Color.fromARGB(opaque, 81, 140, 184);
+  static const loginButtonText = Colors.white;
+  static const logoutText = Colors.red;
+  static const menuBackground = Color.fromARGB(opaque, 249, 250, 252);
+  static const appBarLight = Color.fromARGB(opaque, 40, 112, 217);
+  static const logo = Color.fromARGB(opaque, 26, 75, 146);
+  static const appBar = Color.fromARGB(opaque, 26, 75, 146);
+  static const appBarText = Colors.white;
+  static const formFieldBackground = Colors.white;
+  static const defaultBackground = Color.fromARGB(opaque, 237, 240, 245);
+  static const invertedBackground = Colors.black;
+  static const dialogButtonText = Color.fromARGB(opaque, 52, 130, 247);
+  static const highlightBlue = Color.fromARGB(opaque, 200, 218, 247);
+  static const highlightMidBlue = Color.fromARGB(opaque, 142, 182, 239);
+  static const highlightDarkBlue = Color.fromARGB(opaque, 89, 130, 184);
+  static const highlightCream = Color.fromARGB(opaque, 233, 215, 195);
+  static const highlightDarkCream = Color.fromARGB(opaque, 210, 176, 155);
+  static const highlightOrange = Color.fromARGB(opaque, 244, 172, 134);
+  static const highlightMidOrange = Color.fromARGB(opaque, 236, 116, 54);
+  static const highlightDarkOrange = Color.fromARGB(opaque, 213, 95, 21);
+  static const highlightSoftGreen = Color.fromARGB(opaque, 206, 229, 204);
+  static const highlightGreen = Color.fromARGB(opaque, 116, 181, 103);
+  static const highlightMidGreen = Color.fromARGB(opaque, 60, 139, 59);
+  static const highlightDarkGreen = Color.fromARGB(opaque, 42, 127, 55);
+  static const highlightYellow = Color.fromARGB(opaque, 254, 245, 168);
+  static const highlightMidYellow = Color.fromARGB(opaque, 249, 167, 16);
+  static const highlightGrey = Color.fromARGB(opaque, 224, 224, 224);
+  static const softBlueButton = Color.fromARGB(opaque, 69, 122, 178);
+  static const submit = Color.fromARGB(opaque, 109, 176, 85);
+  static const cancel = Color.fromARGB(opaque, 202, 92, 85);
+  static const warning = Color.fromARGB(opaque, 231, 175, 95);
+  static const edit = Color.fromARGB(opaque, 253, 151, 39);
+  static const print = Color.fromARGB(opaque, 35, 111, 171);
+  static const disabled = Color.fromARGB(255, 200, 200, 200);
+  static const placeholder = Color.fromARGB(255, 131, 136, 139);
+  static final readableGrey = Colors.grey.shade800;
+  static const emptyBackground = Colors.white;
+  static const delete = Colors.red;
+  static const error = Colors.red;
+  static const notification = Colors.amber;
+  static const refresh = Colors.green;
+  static const success = Colors.green;
+  static const defaultText = Colors.black;
+  static const invertedText = Colors.white;
+  static const searchButton = Color.fromARGB(255, 103, 140, 176);
+  static const inputGrey = Color.fromARGB(255, 239, 239, 239);
+  static const lightBlue = Color.fromARGB(255, 117, 190, 219);
+  static const celeste = Color.fromARGB(255, 117, 189, 218);
+  static const verdoso = Color.fromARGB(255, 116, 181, 103);
+  static const commit = Color.fromARGB(255, 235, 175, 80);
+  static const release = Color.fromARGB(255, 105, 191, 222);
+  static const printPosition = Colors.white;
+  static const pickHighlightGreen = Color.fromARGB(255, 34, 130, 0);
+  static const pickHighlightGray = Color.fromARGB(255, 164, 160, 160);
+  static const arcPink = Color.fromARGB(255, 248, 157, 151);
+  static const arcPinkDark = Color.fromARGB(255, 229, 73, 97);
+  static const arcBlue = Color.fromARGB(255, 35, 57, 205);
+  static const arcBueDark = Color.fromARGB(255, 16, 25, 192);
+  static const cupertinoDialog = Color.fromARGB(opaque, 247, 245, 248);
+}
