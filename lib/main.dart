@@ -17,18 +17,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Stroop Game',
+      title: 'Stroop Focus',
       theme: ThemeData(
-        textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
+        textTheme: GoogleFonts.pressStart2pTextTheme(Theme.of(context).textTheme),
+        scaffoldBackgroundColor: const Color(0xFF3A3A3A), // Dark gray background
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2196F3), // Primary color: Blue
-          primary: const Color(0xFF2196F3), // Primary color: Blue
-          secondary: const Color(0xFF2ECC71), // Accent color: Emerald green
+          seedColor: const Color(0xFF6200EE),     // Primary color: Deep Purple
+          primary: const Color(0xFF6200EE),
+          secondary: const Color(0xFF03DAC6),    // Accent color: Teal
+          brightness: Brightness.dark, // Use a dark theme as the base
         ),
-        scaffoldBackgroundColor: const Color(0xFFF4F4F4), // Background color: Light gray
         useMaterial3: true,
       ),
       home: const MainMenuScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
