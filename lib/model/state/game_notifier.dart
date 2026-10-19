@@ -5,21 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stroop/model/game_session.dart';
 import 'package:stroop/model/state/score_providers.dart';
 
-/// Mapping of color names to Color objects.
-final Map<String, Color> kStroopColorMap = {
-  'RED': Colors.red,
-  'GREEN': Colors.green,
-  'BLUE': Colors.blue,
-  'YELLOW': Colors.yellow,
-};
-
-/// Mapping of ink colors to their corresponding correct input direction.
-final Map<Color, Direction> kStroopColorDirectionMap = {
-  Colors.red: Direction.right,
-  Colors.green: Direction.left,
-  Colors.blue: Direction.up,
-  Colors.yellow: Direction.down,
-};
+/// Provider for timestamp generation (allows injecting deterministic clock in tests).
+final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 
 /// Provider for custom challenge generation (allows injecting deterministic challenges in tests).
 final challengeGeneratorProvider = Provider<WordChallenge Function()>((ref) {
@@ -36,10 +23,12 @@ final challengeGeneratorProvider = Provider<WordChallenge Function()>((ref) {
 /// Riverpod notifier managing the game session lifecycle, scoring rules and persistence.
 class GameNotifier extends AutoDisposeNotifier<GameSession> {
   Timer? _gameTimer;
+  DateTime? _stimulusShownAt;
 
   @override
   GameSession build() {
     ref.onDispose(() => _cancelTimer());
+    _stimulusShownAt = null;
     return const GameSession();
   }
 
@@ -57,8 +46,14 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
     int? finalScore,
     int? totalAttempts,
     WordChallenge? nextChallenge,
+    List<int>? reactionTimesMs,
+    int? congruentAttempts,
+    int? congruentCorrect,
+    int? incongruentAttempts,
+    int? incongruentCorrect,
   }) async {
     _cancelTimer();
+    _stimulusShownAt = null;
     final scoreToRecord = finalScore ?? state.score;
 
     state = state.copyWith(
@@ -67,6 +62,11 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
       currentChallenge: nextChallenge ?? state.currentChallenge,
       timer: 0,
       gameState: GameState.gameOver,
+      reactionTimesMs: reactionTimesMs ?? state.reactionTimesMs,
+      congruentAttempts: congruentAttempts ?? state.congruentAttempts,
+      congruentCorrect: congruentCorrect ?? state.congruentCorrect,
+      incongruentAttempts: incongruentAttempts ?? state.incongruentAttempts,
+      incongruentCorrect: incongruentCorrect ?? state.incongruentCorrect,
     );
 
     final storage = ref.read(storageServiceProvider);
@@ -82,6 +82,7 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
     _cancelTimer();
 
     final firstChallenge = _generateChallenge();
+    _stimulusShownAt = ref.read(clockProvider)();
 
     state = state.copyWith(
       gameState: GameState.playing,
@@ -91,6 +92,11 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
       correctAnswers: 0,
       totalAttempts: 0,
       isNewHighScore: false,
+      reactionTimesMs: const [],
+      congruentAttempts: 0,
+      congruentCorrect: 0,
+      incongruentAttempts: 0,
+      incongruentCorrect: 0,
     );
 
     _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -110,6 +116,7 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
   /// Resets the game to ready state and clears running timers.
   void resetGame() {
     _cancelTimer();
+    _stimulusShownAt = null;
     state = const GameSession(gameState: GameState.ready);
   }
 
@@ -120,11 +127,28 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
     final challenge = state.currentChallenge;
     if (challenge == null) return;
 
+    final clock = ref.read(clockProvider);
+    final now = clock();
+    final elapsedMs = _stimulusShownAt != null
+        ? now.difference(_stimulusShownAt!).inMilliseconds
+        : 0;
+    final updatedReactionTimes = [...state.reactionTimesMs, elapsedMs];
+
+    final isCongruent = challenge.isCongruent;
     final correctDirection = kStroopColorDirectionMap[challenge.color];
     final isCorrect = inputDirection == correctDirection;
     final nextChallenge = _generateChallenge();
+    _stimulusShownAt = now;
 
     final newAttempts = state.totalAttempts + 1;
+    final newCongruentAttempts =
+        state.congruentAttempts + (isCongruent ? 1 : 0);
+    final newCongruentCorrect =
+        state.congruentCorrect + (isCongruent && isCorrect ? 1 : 0);
+    final newIncongruentAttempts =
+        state.incongruentAttempts + (!isCongruent ? 1 : 0);
+    final newIncongruentCorrect =
+        state.incongruentCorrect + (!isCongruent && isCorrect ? 1 : 0);
 
     if (isCorrect) {
       final newScore = state.score + 1;
@@ -137,6 +161,11 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
         totalAttempts: newAttempts,
         timer: newTimer,
         currentChallenge: nextChallenge,
+        reactionTimesMs: updatedReactionTimes,
+        congruentAttempts: newCongruentAttempts,
+        congruentCorrect: newCongruentCorrect,
+        incongruentAttempts: newIncongruentAttempts,
+        incongruentCorrect: newIncongruentCorrect,
       );
     } else {
       final newTimer = max(0, state.timer - 2);
@@ -145,12 +174,22 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
         _handleGameOver(
           totalAttempts: newAttempts,
           nextChallenge: nextChallenge,
+          reactionTimesMs: updatedReactionTimes,
+          congruentAttempts: newCongruentAttempts,
+          congruentCorrect: newCongruentCorrect,
+          incongruentAttempts: newIncongruentAttempts,
+          incongruentCorrect: newIncongruentCorrect,
         );
       } else {
         state = state.copyWith(
           totalAttempts: newAttempts,
           timer: newTimer,
           currentChallenge: nextChallenge,
+          reactionTimesMs: updatedReactionTimes,
+          congruentAttempts: newCongruentAttempts,
+          congruentCorrect: newCongruentCorrect,
+          incongruentAttempts: newIncongruentAttempts,
+          incongruentCorrect: newIncongruentCorrect,
         );
       }
     }
