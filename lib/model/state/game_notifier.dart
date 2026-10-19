@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stroop/model/game_session.dart';
+import 'package:stroop/model/state/score_providers.dart';
 
 /// Mapping of color names to Color objects.
 final Map<String, Color> kStroopColorMap = {
@@ -32,7 +33,7 @@ final challengeGeneratorProvider = Provider<WordChallenge Function()>((ref) {
   };
 });
 
-/// Riverpod notifier managing the game session lifecycle and scoring rules.
+/// Riverpod notifier managing the game session lifecycle, scoring rules and persistence.
 class GameNotifier extends AutoDisposeNotifier<GameSession> {
   Timer? _gameTimer;
 
@@ -52,6 +53,30 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
     return generator();
   }
 
+  Future<void> _handleGameOver({
+    int? finalScore,
+    int? totalAttempts,
+    WordChallenge? nextChallenge,
+  }) async {
+    _cancelTimer();
+    final scoreToRecord = finalScore ?? state.score;
+
+    state = state.copyWith(
+      score: scoreToRecord,
+      totalAttempts: totalAttempts ?? state.totalAttempts,
+      currentChallenge: nextChallenge ?? state.currentChallenge,
+      timer: 0,
+      gameState: GameState.gameOver,
+    );
+
+    final storage = ref.read(storageServiceProvider);
+    if (storage != null) {
+      final isNewRecord = await storage.recordGamePlayed(scoreToRecord);
+      ref.read(highScoreProvider.notifier).refresh();
+      state = state.copyWith(isNewHighScore: isNewRecord);
+    }
+  }
+
   /// Starts or restarts a game session.
   void startGame() {
     _cancelTimer();
@@ -65,25 +90,21 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
       currentChallenge: firstChallenge,
       correctAnswers: 0,
       totalAttempts: 0,
+      isNewHighScore: false,
     );
 
     _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (state.timer > 1) {
         state = state.copyWith(timer: state.timer - 1);
       } else {
-        _cancelTimer();
-        state = state.copyWith(
-          timer: 0,
-          gameState: GameState.gameOver,
-        );
+        _handleGameOver();
       }
     });
   }
 
   /// Manually stops the current game and marks it as gameOver.
-  void stopGame() {
-    _cancelTimer();
-    state = state.copyWith(gameState: GameState.gameOver);
+  Future<void> stopGame() async {
+    await _handleGameOver();
   }
 
   /// Resets the game to ready state and clears running timers.
@@ -121,12 +142,9 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
       final newTimer = max(0, state.timer - 2);
 
       if (newTimer == 0) {
-        _cancelTimer();
-        state = state.copyWith(
+        _handleGameOver(
           totalAttempts: newAttempts,
-          timer: 0,
-          gameState: GameState.gameOver,
-          currentChallenge: nextChallenge,
+          nextChallenge: nextChallenge,
         );
       } else {
         state = state.copyWith(

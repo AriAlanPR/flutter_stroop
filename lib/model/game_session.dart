@@ -45,6 +45,7 @@ class GameSession {
   final WordChallenge? currentChallenge;
   final int correctAnswers;
   final int totalAttempts;
+  final bool isNewHighScore;
 
   const GameSession({
     this.gameState = GameState.ready,
@@ -53,6 +54,7 @@ class GameSession {
     this.currentChallenge,
     this.correctAnswers = 0,
     this.totalAttempts = 0,
+    this.isNewHighScore = false,
   });
 
   /// Computed accuracy percentage (0.0 to 100.0).
@@ -66,6 +68,7 @@ class GameSession {
     WordChallenge? currentChallenge,
     int? correctAnswers,
     int? totalAttempts,
+    bool? isNewHighScore,
   }) {
     return GameSession(
       gameState: gameState ?? this.gameState,
@@ -74,6 +77,7 @@ class GameSession {
       currentChallenge: currentChallenge ?? this.currentChallenge,
       correctAnswers: correctAnswers ?? this.correctAnswers,
       totalAttempts: totalAttempts ?? this.totalAttempts,
+      isNewHighScore: isNewHighScore ?? this.isNewHighScore,
     );
   }
 
@@ -87,7 +91,8 @@ class GameSession {
           timer == other.timer &&
           currentChallenge == other.currentChallenge &&
           correctAnswers == other.correctAnswers &&
-          totalAttempts == other.totalAttempts;
+          totalAttempts == other.totalAttempts &&
+          isNewHighScore == other.isNewHighScore;
 
   @override
   int get hashCode =>
@@ -96,5 +101,6 @@ class GameSession {
       timer.hashCode ^
       (currentChallenge?.hashCode ?? 0) ^
       correctAnswers.hashCode ^
-      totalAttempts.hashCode;
+      totalAttempts.hashCode ^
+      isNewHighScore.hashCode;
 }

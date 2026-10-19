@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stroop/model/game_session.dart';
+import 'package:stroop/model/services/storage_service.dart';
 import 'package:stroop/model/state/game_notifier.dart';
+import 'package:stroop/model/state/score_providers.dart';
 
 void main() {
   group('game-core specification tests', () {
@@ -139,6 +142,41 @@ void main() {
       expect(state.gameState, GameState.ready);
       expect(state.score, 0);
       expect(state.totalAttempts, 0);
+    });
+
+    test(
+        'Game over records score and sets isNewHighScore flag when record is beaten',
+        () async {
+      SharedPreferences.setMockInitialValues({
+        StorageService.keyHighScore: 5,
+        StorageService.keyTotalGames: 1,
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          challengeGeneratorProvider.overrideWithValue(
+            () => const WordChallenge(word: 'RED', color: Colors.blue),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(gameNotifierProvider.notifier);
+      notifier.startGame();
+
+      // Submit correct answer 6 times (Colors.blue -> Direction.up) to score 6 > 5
+      for (int i = 0; i < 6; i++) {
+        notifier.checkAnswer(Direction.up);
+      }
+
+      await notifier.stopGame();
+
+      final state = container.read(gameNotifierProvider);
+      expect(state.gameState, GameState.gameOver);
+      expect(state.score, 6);
+      expect(state.isNewHighScore, isTrue);
+      expect(container.read(highScoreProvider), 6);
     });
   });
 }
