@@ -6,8 +6,8 @@
 - [x] 1.3 Add unit tests in `test/game_stats_test.dart` implementing the model and tracking scenarios with exact name parity
 
 ## 2. GameOverView stats dashboard and UI tests
-- [ ] 2.1 Refactor `GameOverView` in `lib/screens/game_screen.dart` to render average reaction time and congruency breakdown
-- [ ] 2.2 Add widget tests in `test/game_screen_stats_test.dart` implementing the UI scenarios with exact name parity
+- [x] 2.1 Refactor `GameOverView` in `lib/screens/game_screen.dart` to render average reaction time and congruency breakdown
+- [x] 2.2 Add widget tests in `test/game_screen_stats_test.dart` implementing the UI scenarios with exact name parity
 
 ## 3. Full suite verification and theme token cleanup
 - [ ] 3.1 Clean up hardcoded style colors in stats chips using Theme tokens

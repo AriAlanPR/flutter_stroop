@@ -186,83 +186,145 @@ class GameOverView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(gameNotifierProvider);
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
 
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Game Over!',
-            style: GoogleFonts.pressStart2p(fontSize: 36.0, color: Colors.white),
-          ),
-          const SizedBox(height: 30),
-          Text(
-            'Final Score: ${session.score}',
-            style: GoogleFonts.inter(fontSize: 24.0, color: Colors.white),
-          ),
-          if (session.isNewHighScore) ...[
-            const SizedBox(height: 12),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
             Text(
-              'NEW HIGH SCORE!',
-              key: const Key('new_high_score_banner'),
-              style: GoogleFonts.pressStart2p(
+              'Game Over!',
+              style: GoogleFonts.pressStart2p(fontSize: 32.0, color: onSurface),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Final Score: ${session.score}',
+              style: GoogleFonts.inter(fontSize: 24.0, color: onSurface),
+            ),
+            if (session.isNewHighScore) ...[
+              const SizedBox(height: 12),
+              Text(
+                'NEW HIGH SCORE!',
+                key: const Key('new_high_score_banner'),
+                style: GoogleFonts.pressStart2p(
+                  fontSize: 16.0,
+                  color: const Color(0xFFFFD700),
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+            Text(
+              'Accuracy: ${session.accuracy.toStringAsFixed(1)}%',
+              style: GoogleFonts.inter(fontSize: 18.0, color: onSurface),
+            ),
+            const SizedBox(height: 16),
+            // Average Reaction Time Chip
+            Container(
+              key: const Key('avg_reaction_time_chip'),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Avg Time: ${session.averageReactionTimeMs}ms',
+                style: GoogleFonts.inter(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w600,
+                  color: onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Cognitive Congruency Breakdown
+            Container(
+              key: const Key('congruency_breakdown_chip'),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Congruent: ${session.congruentAccuracy.toStringAsFixed(1)}%',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w500,
+                      color: onSurface,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text(
+                      '|',
+                      style: TextStyle(
+                        color: onSurface.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'Incongruent: ${session.incongruentAccuracy.toStringAsFixed(1)}%',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w500,
+                      color: onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              _getPerformanceMessage(session.accuracy),
+              style: GoogleFonts.inter(
                 fontSize: 16.0,
-                color: const Color(0xFFFFD700),
+                fontStyle: FontStyle.italic,
+                color: onSurface.withValues(alpha: 0.9),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 36),
+            ElevatedButton(
+              key: const Key('restart_game_button'),
+              onPressed: () =>
+                  ref.read(gameNotifierProvider.notifier).startGame(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.secondary,
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+              ),
+              child: Text(
+                'Restart Game',
+                style: GoogleFonts.pressStart2p(
+                  fontSize: 16.0,
+                  color: theme.colorScheme.onSecondary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextButton(
+              key: const Key('main_menu_button'),
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const MainMenuScreen()),
+                  (Route<dynamic> route) => false,
+                );
+              },
+              child: Text(
+                'Main Menu',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  color: onSurface,
+                  decoration: TextDecoration.underline,
+                  decorationColor: onSurface,
+                ),
               ),
             ),
           ],
-          const SizedBox(height: 8),
-          Text(
-            'Accuracy: ${session.accuracy.toStringAsFixed(1)}%',
-            style: GoogleFonts.inter(fontSize: 20.0, color: Colors.white),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            _getPerformanceMessage(session.accuracy),
-            style: GoogleFonts.inter(
-              fontSize: 18.0,
-              fontStyle: FontStyle.italic,
-              color: Colors.white,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 50),
-          ElevatedButton(
-            key: const Key('restart_game_button'),
-            onPressed: () =>
-                ref.read(gameNotifierProvider.notifier).startGame(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.secondary,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-            ),
-            child: Text(
-              'Restart Game',
-              style: GoogleFonts.pressStart2p(
-                fontSize: 16.0,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          TextButton(
-            key: const Key('main_menu_button'),
-            onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const MainMenuScreen()),
-                (Route<dynamic> route) => false,
-              );
-            },
-            child: Text(
-              'Main Menu',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: Colors.white,
-                decoration: TextDecoration.underline,
-                decorationColor: Colors.white,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
