@@ -39,17 +39,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     super.dispose();
   }
 
-  // Helper method to show the instructions dialog.
-  void _showInstructions(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => const InstructionsDialog(),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final gameSession = ref.watch(gameNotifierProvider);
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
 
     // The main scaffold listens for keyboard and gesture inputs.
     return KeyboardListener(
@@ -61,19 +55,19 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF3A3A3A), // Dark background
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text(
             'Stroop Focus',
-            style: GoogleFonts.pressStart2p(color: Colors.white),
+            style: GoogleFonts.pressStart2p(color: onSurface),
           ),
           actions: [
             IconButton(
               key: const Key('help_button'),
-              icon: const Icon(Icons.help_outline, color: Colors.white),
-              onPressed: () => _showInstructions(context),
+              icon: Icon(Icons.help_outline, color: onSurface),
+              onPressed: () => InstructionsDialog.show(context),
             ),
           ],
         ),
@@ -331,33 +325,6 @@ class GameOverView extends ConsumerWidget {
 }
 
 // --- UI HELPER WIDGETS ---
-
-class DirectionalHint extends StatelessWidget {
-  final Direction direction;
-  const DirectionalHint({required this.direction, super.key});
-
-  (IconData, Color) getHintStyle() {
-    switch (direction) {
-      case Direction.up:
-        return (Icons.arrow_upward, Colors.blue);
-      case Direction.down:
-        return (Icons.arrow_downward, Colors.yellow);
-      case Direction.left:
-        return (Icons.arrow_back, Colors.green);
-      case Direction.right:
-        return (Icons.arrow_forward, Colors.red);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final (icon, color) = getHintStyle();
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Icon(icon, color: color, size: 24),
-    );
-  }
-}
 
 class InfoChip extends StatelessWidget {
   final String label;

@@ -9,24 +9,19 @@ import 'package:stroop/widgets/instructions_dialog.dart';
 class MainMenuScreen extends ConsumerWidget {
   const MainMenuScreen({super.key});
 
-  void _showInstructions(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => const InstructionsDialog(),
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final highScore = ref.watch(highScoreProvider);
+    final theme = Theme.of(context);
+    final onPrimary = theme.colorScheme.onPrimary;
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.secondary,
+              theme.colorScheme.primary,
+              theme.colorScheme.secondary,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -41,12 +36,12 @@ class MainMenuScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.pressStart2p(
                   fontSize: 36.0,
-                  color: Colors.white,
+                  color: onPrimary,
                   shadows: [
-                    const Shadow(
+                    Shadow(
                       blurRadius: 10.0,
-                      color: Colors.black26,
-                      offset: Offset(5.0, 5.0),
+                      color: theme.shadowColor.withValues(alpha: 0.3),
+                      offset: const Offset(5.0, 5.0),
                     ),
                   ],
                 ),
@@ -57,14 +52,14 @@ class MainMenuScreen extends ConsumerWidget {
                 key: const Key('high_score_text'),
                 style: GoogleFonts.pressStart2p(
                   fontSize: 16.0,
-                  color: Colors.white70,
+                  color: onPrimary.withValues(alpha: 0.8),
                 ),
               ),
               const SizedBox(height: 60),
               ElevatedButton(
                 key: const Key('play_button'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
+                  backgroundColor: theme.colorScheme.surface,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                   shape: RoundedRectangleBorder(
@@ -81,21 +76,21 @@ class MainMenuScreen extends ConsumerWidget {
                   'Play',
                   style: GoogleFonts.pressStart2p(
                     fontSize: 24,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
               ),
               const SizedBox(height: 20),
               TextButton(
                 key: const Key('how_to_play_button'),
-                onPressed: () => _showInstructions(context),
+                onPressed: () => InstructionsDialog.show(context),
                 child: Text(
                   'How to Play',
                   style: GoogleFonts.inter(
                     fontSize: 18,
-                    color: Colors.white,
+                    color: onPrimary,
                     decoration: TextDecoration.underline,
-                    decorationColor: Colors.white,
+                    decorationColor: onPrimary,
                   ),
                 ),
               ),
