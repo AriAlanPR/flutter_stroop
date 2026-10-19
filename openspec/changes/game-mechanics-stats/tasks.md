@@ -10,5 +10,5 @@
 - [x] 2.2 Add widget tests in `test/game_screen_stats_test.dart` implementing the UI scenarios with exact name parity
 
 ## 3. Full suite verification and theme token cleanup
-- [ ] 3.1 Clean up hardcoded style colors in stats chips using Theme tokens
-- [ ] 3.2 Run repository verification (`flutter test` and `flutter analyze`) and ensure all checks pass cleanly
+- [x] 3.1 Clean up hardcoded style colors in stats chips using Theme tokens
+- [x] 3.2 Run repository verification (`flutter test` and `flutter analyze`) and ensure all checks pass cleanly

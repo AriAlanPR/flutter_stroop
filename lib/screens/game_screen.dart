@@ -367,6 +367,9 @@ class InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+
     return Column(
       children: [
         Text(
@@ -374,13 +377,16 @@ class InfoChip extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 14.0,
             fontWeight: FontWeight.bold,
-            color: Colors.white70,
+            color: onSurface.withValues(alpha: 0.7),
           ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: GoogleFonts.pressStart2p(fontSize: 28.0, color: Colors.white),
+          style: GoogleFonts.pressStart2p(
+            fontSize: 28.0,
+            color: onSurface,
+          ),
         ),
       ],
     );
