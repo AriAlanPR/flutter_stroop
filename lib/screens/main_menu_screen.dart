@@ -49,9 +49,11 @@ class MainMenuScreen extends StatelessWidget {
               ),
               const SizedBox(height: 80),
               ElevatedButton(
+                key: const Key('play_button'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -72,6 +74,7 @@ class MainMenuScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               TextButton(
+                key: const Key('how_to_play_button'),
                 onPressed: () => _showInstructions(context),
                 child: Text(
                   'How to Play',
@@ -79,7 +82,7 @@ class MainMenuScreen extends StatelessWidget {
                     fontSize: 18,
                     color: Colors.white,
                     decoration: TextDecoration.underline,
-                    decorationColor: Colors.white
+                    decorationColor: Colors.white,
                   ),
                 ),
               ),

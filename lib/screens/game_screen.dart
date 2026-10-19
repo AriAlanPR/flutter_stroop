@@ -3,11 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:stroop/providers/game_providers.dart';
-import 'package:stroop/widgets/instructions_dialog.dart';
+import 'package:stroop/model/game_session.dart';
+import 'package:stroop/model/state/game_notifier.dart';
 import 'package:stroop/screens/main_menu_screen.dart';
+import 'package:stroop/widgets/instructions_dialog.dart';
 
-// Main entry point for the game screen.
+/// Main entry point for the game screen.
 class GameScreen extends ConsumerStatefulWidget {
   const GameScreen({super.key});
 
@@ -28,7 +29,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
     // Start the game as soon as the screen is initialized.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(gameLogicProvider).startGame();
+      ref.read(gameNotifierProvider.notifier).startGame();
     });
   }
 
@@ -48,7 +49,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final gameState = ref.watch(gameStateProvider);
+    final gameSession = ref.watch(gameNotifierProvider);
 
     // The main scaffold listens for keyboard and gesture inputs.
     return KeyboardListener(
@@ -64,9 +65,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: Text('Stroop Focus', style: GoogleFonts.pressStart2p(color: Colors.white)),
+          title: Text(
+            'Stroop Focus',
+            style: GoogleFonts.pressStart2p(color: Colors.white),
+          ),
           actions: [
             IconButton(
+              key: const Key('help_button'),
               icon: const Icon(Icons.help_outline, color: Colors.white),
               onPressed: () => _showInstructions(context),
             ),
@@ -75,7 +80,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         body: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onPanEnd: (details) => _handleSwipe(details, ref),
-          child: _buildGameStateView(gameState),
+          child: _buildGameStateView(gameSession.gameState),
         ),
       ),
     );
@@ -88,7 +93,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       case GameState.gameOver:
         return const GameOverView();
       case GameState.ready:
-        // Show a loading indicator while the game is getting ready.
         return const Center(child: CircularProgressIndicator());
     }
   }
@@ -96,34 +100,34 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   // --- INPUT HANDLERS ---
 
   void _handleKeyPress(LogicalKeyboardKey key, WidgetRef ref) {
-    final gameLogic = ref.read(gameLogicProvider);
+    final notifier = ref.read(gameNotifierProvider.notifier);
     if (key == LogicalKeyboardKey.arrowUp) {
-      gameLogic.checkAnswer(Direction.up);
+      notifier.checkAnswer(Direction.up);
     } else if (key == LogicalKeyboardKey.arrowDown) {
-      gameLogic.checkAnswer(Direction.down);
+      notifier.checkAnswer(Direction.down);
     } else if (key == LogicalKeyboardKey.arrowLeft) {
-      gameLogic.checkAnswer(Direction.left);
+      notifier.checkAnswer(Direction.left);
     } else if (key == LogicalKeyboardKey.arrowRight) {
-      gameLogic.checkAnswer(Direction.right);
+      notifier.checkAnswer(Direction.right);
     }
   }
 
   void _handleSwipe(DragEndDetails details, WidgetRef ref) {
     final velocity = details.velocity.pixelsPerSecond;
-    final gameLogic = ref.read(gameLogicProvider);
+    final notifier = ref.read(gameNotifierProvider.notifier);
 
     if (velocity.distanceSquared > (_minSwipeVelocity * _minSwipeVelocity)) {
       if (velocity.dx.abs() > velocity.dy.abs()) {
         if (velocity.dx < 0) {
-          gameLogic.checkAnswer(Direction.left);
+          notifier.checkAnswer(Direction.left);
         } else {
-          gameLogic.checkAnswer(Direction.right);
+          notifier.checkAnswer(Direction.right);
         }
       } else {
         if (velocity.dy < 0) {
-          gameLogic.checkAnswer(Direction.up);
+          notifier.checkAnswer(Direction.up);
         } else {
-          gameLogic.checkAnswer(Direction.down);
+          notifier.checkAnswer(Direction.down);
         }
       }
     }
@@ -137,9 +141,8 @@ class GameView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final score = ref.watch(scoreProvider);
-    final remainingTime = ref.watch(timerProvider);
-    final challenge = ref.watch(currentChallengeProvider);
+    final session = ref.watch(gameNotifierProvider);
+    final challenge = session.currentChallenge;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -149,8 +152,8 @@ class GameView extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              InfoChip(label: 'Score', value: score.toString()),
-              InfoChip(label: 'Time', value: remainingTime.toString()),
+              InfoChip(label: 'Score', value: session.score.toString()),
+              InfoChip(label: 'Time', value: session.timer.toString()),
             ],
           ),
         ),
@@ -158,7 +161,11 @@ class GameView extends ConsumerWidget {
         if (challenge != null)
           Text(
             challenge.word,
-            style: GoogleFonts.pressStart2p(fontSize: 48.0, color: challenge.color),
+            key: const Key('challenge_word'),
+            style: GoogleFonts.pressStart2p(
+              fontSize: 48.0,
+              color: challenge.color,
+            ),
           ),
         const Spacer(),
       ],
@@ -170,44 +177,63 @@ class GameOverView extends ConsumerWidget {
   const GameOverView({super.key});
 
   String _getPerformanceMessage(double accuracy) {
-    if (accuracy >= 0.9) return "Outstanding focus!";
-    if (accuracy >= 0.7) return "Great job!";
-    if (accuracy >= 0.5) return "Good effort!";
+    if (accuracy >= 90.0) return "Outstanding focus!";
+    if (accuracy >= 70.0) return "Great job!";
+    if (accuracy >= 50.0) return "Good effort!";
     return "Keep practicing to improve your focus!";
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final finalScore = ref.watch(scoreProvider);
-    final correct = ref.watch(correctAnswersProvider);
-    final total = ref.watch(totalAttemptsProvider);
-    final accuracy = (total == 0) ? 0.0 : correct / total;
+    final session = ref.watch(gameNotifierProvider);
 
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Game Over!', style: GoogleFonts.pressStart2p(fontSize: 36.0, color: Colors.white)),
+          Text(
+            'Game Over!',
+            style: GoogleFonts.pressStart2p(fontSize: 36.0, color: Colors.white),
+          ),
           const SizedBox(height: 30),
-          Text('Final Score: $finalScore', style: GoogleFonts.inter(fontSize: 24.0, color: Colors.white)),
-          Text('Accuracy: ${(accuracy * 100).toStringAsFixed(1)}%', style: GoogleFonts.inter(fontSize: 20.0, color: Colors.white)),
+          Text(
+            'Final Score: ${session.score}',
+            style: GoogleFonts.inter(fontSize: 24.0, color: Colors.white),
+          ),
+          Text(
+            'Accuracy: ${session.accuracy.toStringAsFixed(1)}%',
+            style: GoogleFonts.inter(fontSize: 20.0, color: Colors.white),
+          ),
           const SizedBox(height: 20),
           Text(
-            _getPerformanceMessage(accuracy),
-            style: GoogleFonts.inter(fontSize: 18.0, fontStyle: FontStyle.italic, color: Colors.white),
+            _getPerformanceMessage(session.accuracy),
+            style: GoogleFonts.inter(
+              fontSize: 18.0,
+              fontStyle: FontStyle.italic,
+              color: Colors.white,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 50),
           ElevatedButton(
-            onPressed: () => ref.read(gameLogicProvider).startGame(),
+            key: const Key('restart_game_button'),
+            onPressed: () =>
+                ref.read(gameNotifierProvider.notifier).startGame(),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.secondary,
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
             ),
-            child: Text('Restart Game', style: GoogleFonts.pressStart2p(fontSize: 16.0, color: Colors.black)),
+            child: Text(
+              'Restart Game',
+              style: GoogleFonts.pressStart2p(
+                fontSize: 16.0,
+                color: Colors.black,
+              ),
+            ),
           ),
           const SizedBox(height: 20),
           TextButton(
+            key: const Key('main_menu_button'),
             onPressed: () {
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (context) => const MainMenuScreen()),
@@ -220,7 +246,7 @@ class GameOverView extends ConsumerWidget {
                 fontSize: 16,
                 color: Colors.white,
                 decoration: TextDecoration.underline,
-                decorationColor: Colors.white
+                decorationColor: Colors.white,
               ),
             ),
           ),
@@ -238,10 +264,14 @@ class DirectionalHint extends StatelessWidget {
 
   (IconData, Color) getHintStyle() {
     switch (direction) {
-      case Direction.up:    return (Icons.arrow_upward, Colors.blue);
-      case Direction.down:  return (Icons.arrow_downward, Colors.yellow);
-      case Direction.left:  return (Icons.arrow_back, Colors.green);
-      case Direction.right: return (Icons.arrow_forward, Colors.red);
+      case Direction.up:
+        return (Icons.arrow_upward, Colors.blue);
+      case Direction.down:
+        return (Icons.arrow_downward, Colors.yellow);
+      case Direction.left:
+        return (Icons.arrow_back, Colors.green);
+      case Direction.right:
+        return (Icons.arrow_forward, Colors.red);
     }
   }
 
@@ -265,9 +295,19 @@ class InfoChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(label.toUpperCase(), style: GoogleFonts.inter(fontSize: 14.0, fontWeight: FontWeight.bold, color: Colors.white70)),
+        Text(
+          label.toUpperCase(),
+          style: GoogleFonts.inter(
+            fontSize: 14.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.white70,
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(value, style: GoogleFonts.pressStart2p(fontSize: 28.0, color: Colors.white)),
+        Text(
+          value,
+          style: GoogleFonts.pressStart2p(fontSize: 28.0, color: Colors.white),
+        ),
       ],
     );
   }

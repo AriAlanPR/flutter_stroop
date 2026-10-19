@@ -6,9 +6,9 @@
 - [x] 1.3 Add unit tests in `test/game_notifier_test.dart` implementing the scenarios with exact name parity
 
 ## 2. Screen integration and provider migration
-- [ ] 2.1 Refactor `lib/screens/game_screen.dart` to consume `gameNotifierProvider` and dispatch actions cleanly
-- [ ] 2.2 Refactor `lib/screens/main_menu_screen.dart` to eliminate manual multiple provider resets
-- [ ] 2.3 Remove or redirect legacy `lib/providers/game_providers.dart` to prevent duplicate state sources
+- [x] 2.1 Refactor `lib/screens/game_screen.dart` to consume `gameNotifierProvider` and dispatch actions cleanly
+- [x] 2.2 Refactor `lib/screens/main_menu_screen.dart` to eliminate manual multiple provider resets
+- [x] 2.3 Remove or redirect legacy `lib/providers/game_providers.dart` to prevent duplicate state sources
 
 ## 3. Widget test repair and verification
 - [ ] 3.1 Update `test/widget_test.dart` to test `MainMenuScreen` smoke rendering instead of obsolete counter
