@@ -11,5 +11,5 @@
 - [x] 2.3 Remove or redirect legacy `lib/providers/game_providers.dart` to prevent duplicate state sources
 
 ## 3. Widget test repair and verification
-- [ ] 3.1 Update `test/widget_test.dart` to test `MainMenuScreen` smoke rendering instead of obsolete counter
-- [ ] 3.2 Run repository verification (`flutter test` and `flutter analyze`) and ensure all checks pass cleanly
+- [x] 3.1 Update `test/widget_test.dart` to test `MainMenuScreen` smoke rendering instead of obsolete counter
+- [x] 3.2 Run repository verification (`flutter test` and `flutter analyze`) and ensure all checks pass cleanly
