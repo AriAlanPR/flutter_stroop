@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:stroop/model/state/score_providers.dart';
 import 'package:stroop/screens/game_screen.dart';
 import 'package:stroop/widgets/instructions_dialog.dart';
 
-class MainMenuScreen extends StatelessWidget {
+class MainMenuScreen extends ConsumerWidget {
   const MainMenuScreen({super.key});
 
   void _showInstructions(BuildContext context) {
@@ -15,7 +17,9 @@ class MainMenuScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final highScore = ref.watch(highScoreProvider);
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -47,7 +51,16 @@ class MainMenuScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 80),
+              const SizedBox(height: 20),
+              Text(
+                'HIGH SCORE: $highScore',
+                key: const Key('high_score_text'),
+                style: GoogleFonts.pressStart2p(
+                  fontSize: 16.0,
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(height: 60),
               ElevatedButton(
                 key: const Key('play_button'),
                 style: ElevatedButton.styleFrom(

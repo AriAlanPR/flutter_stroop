@@ -200,6 +200,18 @@ class GameOverView extends ConsumerWidget {
             'Final Score: ${session.score}',
             style: GoogleFonts.inter(fontSize: 24.0, color: Colors.white),
           ),
+          if (session.isNewHighScore) ...[
+            const SizedBox(height: 12),
+            Text(
+              'NEW HIGH SCORE!',
+              key: const Key('new_high_score_banner'),
+              style: GoogleFonts.pressStart2p(
+                fontSize: 16.0,
+                color: const Color(0xFFFFD700),
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
           Text(
             'Accuracy: ${session.accuracy.toStringAsFixed(1)}%',
             style: GoogleFonts.inter(fontSize: 20.0, color: Colors.white),

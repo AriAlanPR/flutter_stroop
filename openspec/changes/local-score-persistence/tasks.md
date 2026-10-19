@@ -11,7 +11,7 @@
 - [x] 2.3 Verify state integration with tests in `test/game_notifier_test.dart`
 
 ## 3. UI presentation and widget tests
-- [ ] 3.1 Update `MainMenuScreen` to display the current high score with a semantic key
-- [ ] 3.2 Update `GameOverView` to indicate whether a new high score was achieved
-- [ ] 3.3 Add widget tests in `test/score_ui_test.dart` implementing the UI scenarios with exact name parity
-- [ ] 3.4 Run repository verification (`flutter test` and `flutter analyze`) and ensure all checks pass cleanly
+- [x] 3.1 Update `MainMenuScreen` to display the current high score with a semantic key
+- [x] 3.2 Update `GameOverView` to indicate whether a new high score was achieved
+- [x] 3.3 Add widget tests in `test/score_ui_test.dart` implementing the UI scenarios with exact name parity
+- [x] 3.4 Run repository verification (`flutter test` and `flutter analyze`) and ensure all checks pass cleanly
