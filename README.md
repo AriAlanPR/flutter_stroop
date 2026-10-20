@@ -1,58 +1,78 @@
-# flutter_stroop
+# Stroop Focus
 
-A Flutter project implementing a Stroop Effect game. This application challenges users to identify the ink color of a word, rather than the word itself, to test cognitive processing speed and accuracy. It utilizes Flutter for cross-platform development, Riverpod for state management, and Google Fonts for custom typography.
+Un minijuego de reflejos y agilidad mental basado en el **Efecto Stroop**, desarrollado con **Flutter** y **Riverpod**.
 
-## Game Description
+El Efecto Stroop pone a prueba la velocidad y precisión del procesamiento cognitivo al mostrar palabras de colores en tintas discordantes (por ejemplo, la palabra *"ROJO"* escrita en tinta azul). El objetivo es responder rápidamente identificando el **color de la tinta** e ignorando el significado del texto.
 
-The Stroop Effect demonstrates interference in reaction time of a task. In this game, words like "RED", "GREEN", "BLUE", or "YELLOW" are displayed in conflicting ink colors (e.g., the word "RED" might be displayed in blue ink). The player must quickly identify the *ink color* and respond by swiping or using arrow keys in a specific direction:
+---
 
-*   **Red Ink:** Swipe Right / Right Arrow Key
-*   **Green Ink:** Swipe Left / Left Arrow Key
-*   **Blue Ink:** Swipe Up / Up Arrow Key
-*   **Yellow Ink:** Swipe Down / Down Arrow Key
+## Características Principales
 
-The game includes a timer, tracks the player's score, and provides immediate feedback on correct or incorrect answers, adjusting the score and time accordingly.
+- **Mecánica Arcade de Alta Velocidad**: Controles responsivos por gestos táctiles (swipe) y teclas de dirección en escritorio/web.
+- **Temporizador Dinámico**: Bonificación de tiempo por aciertos consecutivos y penalización por errores.
+- **Persistencia Local de Récords**: Registro automático del récord histórico (High Score) usando `shared_preferences`.
+- **Métricas Cognitivas en Tiempo Real**:
+  - Tiempo de reacción promedio en milisegundos (`Avg Time: Xms`).
+  - Desglose de precisión según congruencia del estímulo (`Congruent %` vs `Incongruent %`).
+- **Diseño Arcade 16-Bit**: Tipografía pixel art (`Press Start 2P`), tokens de color adaptativos para modo claro/oscuro y assets visuales temáticos.
+- **Multiplataforma**: Compatible con Android, iOS y Web.
 
+---
 
+## Controles de Juego
 
-## Getting Started
+| Color de Tinta | Gesto Táctil (Móvil) | Teclado (Desktop/Web) |
+| :--- | :--- | :--- |
+| **Rojo** | Deslizar hacia la Derecha (Swipe Right) | Flecha Derecha (`→`) |
+| **Verde** | Deslizar hacia la Izquierda (Swipe Left) | Flecha Izquierda (`←`) |
+| **Azul** | Deslizar hacia Arriba (Swipe Up) | Flecha Arriba (`↑`) |
+| **Amarillo** | Deslizar hacia Abajo (Swipe Down) | Flecha Abajo (`↓`) |
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## Documentación del Proyecto
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Toda la documentación técnica, guías y seguimiento del proyecto se encuentra organizada en [`docs/`](docs/):
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **[`docs/backlog.md`](docs/backlog.md)**: Lista de tareas pendientes, audio/SFX y nuevas funciones.
+- **[`docs/changelog.md`](docs/changelog.md)**: Historial detallado de versiones y cambios implementados.
+- **[`docs/roadmap.md`](docs/roadmap.md)**: Fases de evolución y metas estratégicas del juego.
+- **[`docs/observations.md`](docs/observations.md)**: Decisiones técnicas, notas de Riverpod y consideraciones de diseño.
+- **[`docs/troubleshooting.md`](docs/troubleshooting.md)**: Solución de problemas comunes (launcher icons, splash screen, pods).
+- **[`docs/auditoria/`](docs/auditoria/)**: Informes de auditoría inicial y análisis arquitectónico.
+- **[`docs/qa/`](docs/qa/)**: Guías de QA y validación manual.
 
-## Solución de Problemas (Troubleshooting)
+---
 
-### Error de `PathNotFoundException` con `flutter_launcher_icons`
+## Inicio Rápido (Desarrollo)
 
-**Problema:**
-Al ejecutar `dart run flutter_launcher_icons`, puede aparecer un error `PathNotFoundException` indicando que no se encuentra un archivo de imagen, por ejemplo:
-`PathNotFoundException: Cannot open file, path = 'assets/icon/icon.png' (OS Error: No such file or directory, errno = 2)`
+### Requisitos Previos
+- Flutter SDK `^3.7.2` o superior.
+- Dart SDK integrado.
 
-Este error puede ser confuso, ya que la ruta de la imagen del lanzador (`image_path`) está correctamente especificada en `pubspec.yaml` (por ejemplo, `lib/assets/images/launcher.png`).
+### Instalación y Ejecución
+```bash
+# 1. Clonar el repositorio y obtener dependencias
+flutter pub get
 
-**Causa:**
-El comando `dart run flutter_launcher_icons:generate -o` genera un archivo de configuración llamado `flutter_launcher_icons.yaml` en la raíz del proyecto. Este archivo tiene precedencia sobre la configuración definida en `pubspec.yaml`. Si este archivo generado contiene una ruta de imagen diferente o una configuración por defecto que busca `assets/icon/icon.png`, ignorará la configuración de `pubspec.yaml`.
+# 2. Ejecutar la suite de pruebas automatizadas
+flutter test
 
-**Solución:**
-1.  **Eliminar el archivo de configuración generado:** Borre el archivo `flutter_launcher_icons.yaml` de la raíz de su proyecto.
-2.  **Verificar `pubspec.yaml`:** Asegúrese de que la sección `flutter_launcher_icons` en su `pubspec.yaml` esté configurada correctamente con la `image_path` deseada.
-    ```yaml
-    flutter_launcher_icons:
-      android: true
-      ios: true
-      image_path: "lib/assets/images/launcher.png"
-      remove_alpha_ios: true # Opcional: para eliminar el canal alfa en iOS
-    ```
-3.  **Volver a ejecutar el comando:** Una vez eliminado el archivo `flutter_launcher_icons.yaml` y verificada la configuración en `pubspec.yaml`, ejecute de nuevo el comando para generar los iconos:
-    ```bash
-    dart run flutter_launcher_icons
-    ```
-    Esto debería resolver el `PathNotFoundException` y generar los iconos correctamente utilizando la configuración de `pubspec.yaml`.
+# 3. Iniciar la aplicación en el dispositivo o emulador deseado
+flutter run
+```
+
+### Comandos de Utilidad
+```bash
+# Generar iconos de launcher para Android/iOS
+dart run flutter_launcher_icons
+
+# Generar pantalla de bienvenida nativa (Splash)
+dart run flutter_native_splash:create
+```
+
+---
+
+## Licencia
+
+Este proyecto está bajo desarrollo personal para fines educativos y de entretenimiento.
