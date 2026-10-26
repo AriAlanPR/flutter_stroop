@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class StorageService {
   static const String keyHighScore = 'stroop_high_score';
   static const String keyTotalGames = 'stroop_total_games';
+  static const String keySoundEnabled = 'stroop_sound_enabled';
 
   final SharedPreferences _prefs;
 
@@ -38,5 +39,15 @@ class StorageService {
     await _prefs.setInt(keyTotalGames, currentGames + 1);
     final isNewRecord = await saveHighScore(finalScore);
     return isNewRecord;
+  }
+
+  /// Retrieves whether audio feedback is enabled (defaults to true).
+  bool isSoundEnabled() {
+    return _prefs.getBool(keySoundEnabled) ?? true;
+  }
+
+  /// Persists the user preference for audio feedback.
+  Future<void> setSoundEnabled(bool enabled) async {
+    await _prefs.setBool(keySoundEnabled, enabled);
   }
 }
