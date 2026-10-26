@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stroop/model/game_session.dart';
 import 'package:stroop/model/state/score_providers.dart';
+import 'package:stroop/model/state/sound_providers.dart';
 
 /// Provider for timestamp generation (allows injecting deterministic clock in tests).
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
@@ -56,6 +57,8 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
     _stimulusShownAt = null;
     final scoreToRecord = finalScore ?? state.score;
 
+    ref.read(audioServiceProvider).playGameOver();
+
     state = state.copyWith(
       score: scoreToRecord,
       totalAttempts: totalAttempts ?? state.totalAttempts,
@@ -101,7 +104,11 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
 
     _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (state.timer > 1) {
-        state = state.copyWith(timer: state.timer - 1);
+        final remaining = state.timer - 1;
+        if (remaining <= 3) {
+          ref.read(audioServiceProvider).playWarningTick();
+        }
+        state = state.copyWith(timer: remaining);
       } else {
         _handleGameOver();
       }
@@ -151,6 +158,7 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
         state.incongruentCorrect + (!isCongruent && isCorrect ? 1 : 0);
 
     if (isCorrect) {
+      ref.read(audioServiceProvider).playCorrect();
       final newScore = state.score + 1;
       final newCorrect = state.correctAnswers + 1;
       final newTimer = min(99, state.timer + 1);
@@ -168,6 +176,7 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
         incongruentCorrect: newIncongruentCorrect,
       );
     } else {
+      ref.read(audioServiceProvider).playIncorrect();
       final newTimer = max(0, state.timer - 2);
 
       if (newTimer == 0) {

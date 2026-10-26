@@ -15,11 +15,11 @@
 ---
 
 ## 2. Integración de audio y respuesta háptica en el flujo de juego
-- [ ] 2.1 Conectar `AudioService` con `GameNotifier` respetando la inyección de dependencias para testabilidad
-- [ ] 2.2 Disparar sonido positivo e impacto háptico ligero en respuestas correctas
-- [ ] 2.3 Disparar sonido de error e impacto háptico medio en respuestas incorrectas
-- [ ] 2.4 Disparar sonido de fin de partida e impacto háptico pesado al agotarse el tiempo
-- [ ] 2.5 Escribir pruebas unitarias con mock de `AudioService` en `game_notifier_test.dart` cubriendo:
+- [x] 2.1 Conectar `AudioService` con `GameNotifier` respetando la inyección de dependencias para testabilidad
+- [x] 2.2 Disparar sonido positivo e impacto háptico ligero en respuestas correctas
+- [x] 2.3 Disparar sonido de error e impacto háptico medio en respuestas incorrectas
+- [x] 2.4 Disparar sonido de fin de partida e impacto háptico pesado al agotarse el tiempo
+- [x] 2.5 Escribir pruebas unitarias con mock de `AudioService` en `game_notifier_test.dart` cubriendo:
   - `Correct response triggers positive sound and light haptic`
   - `Incorrect response triggers error sound and medium haptic`
   - `Game over triggers game over sound and heavy haptic`

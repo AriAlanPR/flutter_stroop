@@ -1,80 +1,116 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
-/// Service responsible for triggering audio sound effects and device haptics.
-class AudioService {
-  final AudioPlayer _player;
+/// Contract for audio and haptic feedback triggers.
+abstract class AudioService {
+  Future<void> playCorrect();
+  Future<void> playIncorrect();
+  Future<void> playGameOver();
+  Future<void> playWarningTick();
+  void dispose();
+}
+
+/// Default implementation utilizing audioplayers and system haptics.
+class DefaultAudioService implements AudioService {
+  AudioPlayer? _player;
   final bool Function() _isSoundEnabled;
 
-  AudioService({
+  DefaultAudioService({
     AudioPlayer? player,
     bool Function()? isSoundEnabled,
-  })  : _player = player ?? AudioPlayer(),
-        _isSoundEnabled = isSoundEnabled ?? (() => true) {
-    _initPlayer();
-  }
+  })  : _player = player,
+        _isSoundEnabled = isSoundEnabled ?? (() => true);
 
-  void _initPlayer() {
+  bool get _areBindingsInitialized {
     try {
-      _player.setPlayerMode(PlayerMode.lowLatency);
+      WidgetsBinding.instance;
+      return true;
     } catch (_) {
-      // Ignore if lowLatency mode is not supported on the target platform
+      return false;
     }
   }
 
-  /// Plays the positive confirmation sound and emits light haptic feedback.
+  AudioPlayer? get _safePlayer {
+    if (_player != null) return _player;
+    if (!_areBindingsInitialized) {
+      return null;
+    }
+    try {
+      final p = AudioPlayer();
+      try {
+        p.setPlayerMode(PlayerMode.lowLatency);
+      } catch (_) {}
+      return _player = p;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _safeHaptic(Future<void> Function() hapticAction) async {
+    if (!_areBindingsInitialized) return;
+    try {
+      await hapticAction();
+    } catch (_) {}
+  }
+
+  @override
   Future<void> playCorrect() async {
     if (!_isSoundEnabled()) return;
+    await _safeHaptic(HapticFeedback.lightImpact);
     try {
-      await HapticFeedback.lightImpact();
-      await _player.stop();
-      await _player.play(AssetSource('audio/correct.wav'));
+      final player = _safePlayer;
+      await player?.stop();
+      await player?.play(AssetSource('audio/correct.wav'));
     } catch (_) {
-      // Fail-soft: audio playback failure must never disrupt gameplay
+      // Fail-soft
     }
   }
 
-  /// Plays the error buzzer sound and emits medium haptic feedback.
+  @override
   Future<void> playIncorrect() async {
     if (!_isSoundEnabled()) return;
+    await _safeHaptic(HapticFeedback.mediumImpact);
     try {
-      await HapticFeedback.mediumImpact();
-      await _player.stop();
-      await _player.play(AssetSource('audio/incorrect.wav'));
+      final player = _safePlayer;
+      await player?.stop();
+      await player?.play(AssetSource('audio/incorrect.wav'));
     } catch (_) {
       // Fail-soft
     }
   }
 
-  /// Plays the game over jingle and emits heavy haptic feedback.
+  @override
   Future<void> playGameOver() async {
     if (!_isSoundEnabled()) return;
+    await _safeHaptic(HapticFeedback.heavyImpact);
     try {
-      await HapticFeedback.heavyImpact();
-      await _player.stop();
-      await _player.play(AssetSource('audio/game_over.wav'));
+      final player = _safePlayer;
+      await player?.stop();
+      await player?.play(AssetSource('audio/game_over.wav'));
     } catch (_) {
       // Fail-soft
     }
   }
 
-  /// Plays a short warning tick click without haptic feedback.
+  @override
   Future<void> playWarningTick() async {
     if (!_isSoundEnabled()) return;
     try {
-      await _player.stop();
-      await _player.play(AssetSource('audio/tick.wav'));
+      final player = _safePlayer;
+      await player?.stop();
+      await player?.play(AssetSource('audio/tick.wav'));
     } catch (_) {
       // Fail-soft
     }
   }
 
-  /// Releases audio resources when disposed.
+  @override
   void dispose() {
     try {
-      _player.dispose();
+      _player?.dispose();
     } catch (_) {
-      // Ignore cleanup errors
+      // Fail-soft
     }
   }
 }

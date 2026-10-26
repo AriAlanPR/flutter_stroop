@@ -25,7 +25,7 @@ final soundSettingsProvider =
 
 /// Provider exposing the AudioService instance.
 final audioServiceProvider = Provider<AudioService>((ref) {
-  final service = AudioService(
+  final service = DefaultAudioService(
     isSoundEnabled: () => ref.read(soundSettingsProvider),
   );
   ref.onDispose(service.dispose);

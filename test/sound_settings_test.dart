@@ -51,7 +51,8 @@ void main() {
 
       // Verify that an AudioService wired to this provider suppresses sound
       var playerTriggered = false;
-      final audioService = AudioService(
+      final audioService = DefaultAudioService(
+        player: null,
         isSoundEnabled: () => container.read(soundSettingsProvider),
       );
 
