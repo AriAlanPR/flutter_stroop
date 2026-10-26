@@ -21,11 +21,11 @@
 ---
 
 ## 3. SettingsDialog, Rediseño Retro de InstructionsDialog y Widget Tests
-- [ ] 3.1 Crear `SettingsDialog` con sliders de volumen y switches para SFX, BGM y hápticos con estética arcade
-- [ ] 3.2 Rediseñar `InstructionsDialog` con tarjetas de cuadrantes para cada dirección, badges de color y tipografía `Press Start 2P`
-- [ ] 3.3 Agregar botón de configuración (`Key('settings_button')`) en `MainMenuScreen`
-- [ ] 3.4 Escribir widget tests cubriendo paridad de escenarios:
+- [x] 3.1 Crear `SettingsDialog` con sliders de volumen y switches para SFX, BGM y hápticos con estética arcade
+- [x] 3.2 Rediseñar `InstructionsDialog` con tarjetas de cuadrantes para cada dirección, badges de color y tipografía `Press Start 2P`
+- [x] 3.3 Agregar botón de configuración (`Key('settings_button')`) en `MainMenuScreen`
+- [x] 3.4 Escribir widget tests cubriendo paridad de escenarios:
   - `Settings dialog displays persisted volume and toggle states`
   - `Adjusting settings updates audio output and persists values`
   - `Instructions dialog displays retro styled directional cards`
-- [ ] 3.5 Verificar adaptación visual y contraste en temas claro y oscuro
+- [x] 3.5 Verificar adaptación visual y contraste en temas claro y oscuro

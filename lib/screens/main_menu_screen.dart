@@ -6,6 +6,7 @@ import 'package:stroop/model/state/score_providers.dart';
 import 'package:stroop/model/state/sound_providers.dart';
 import 'package:stroop/screens/game_screen.dart';
 import 'package:stroop/widgets/instructions_dialog.dart';
+import 'package:stroop/widgets/settings_dialog.dart';
 
 class MainMenuScreen extends ConsumerWidget {
   const MainMenuScreen({super.key});
@@ -33,16 +34,31 @@ class MainMenuScreen extends ConsumerWidget {
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: IconButton(
-                    key: const Key('sound_toggle_button'),
-                    icon: Icon(
-                      isSoundEnabled ? Icons.volume_up : Icons.volume_off,
-                      color: onPrimary,
-                      size: 28,
-                    ),
-                    onPressed: () {
-                      ref.read(soundSettingsProvider.notifier).toggleSound();
-                    },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        key: const Key('sound_toggle_button'),
+                        icon: Icon(
+                          isSoundEnabled ? Icons.volume_up : Icons.volume_off,
+                          color: onPrimary,
+                          size: 28,
+                        ),
+                        onPressed: () {
+                          ref.read(soundSettingsProvider.notifier).toggleSound();
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        key: const Key('settings_button'),
+                        icon: Icon(
+                          Icons.settings,
+                          color: onPrimary,
+                          size: 28,
+                        ),
+                        onPressed: () => SettingsDialog.show(context),
+                      ),
+                    ],
                   ),
                 ),
               ),

@@ -4,7 +4,7 @@ import 'package:stroop/widgets/instructions_dialog.dart';
 
 void main() {
   group('InstructionsDialog tests', () {
-    testWidgets('renders rules and closes on Got it button tap',
+    testWidgets('Instructions dialog displays retro styled directional cards',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -24,16 +24,19 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(InstructionsDialog), findsOneWidget);
-      expect(find.text('How to Play'), findsOneWidget);
+      expect(find.text('HOW TO PLAY'), findsOneWidget);
       expect(
-        find.text(
-            'Respond to the INK COLOR of the word, not the text itself.'),
+        find.text('Respond to the INK COLOR of the word, NOT what it spells!'),
         findsOneWidget,
       );
-      expect(find.byType(InstructionItem), findsNWidgets(4));
+      expect(find.byType(DirectionCard), findsNWidgets(4));
+      expect(find.text('BLUE'), findsOneWidget);
+      expect(find.text('YELLOW'), findsOneWidget);
+      expect(find.text('GREEN'), findsOneWidget);
+      expect(find.text('RED'), findsOneWidget);
 
-      // Close dialog
-      await tester.tap(find.text('Got it!'));
+      // Close dialog via GOT IT! button
+      await tester.tap(find.text('GOT IT!'));
       await tester.pumpAndSettle();
 
       expect(find.byType(InstructionsDialog), findsNothing);
