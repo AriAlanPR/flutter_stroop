@@ -12,9 +12,9 @@
 ---
 
 ## 2. Integración de BGM en GameNotifier y ciclo de juego
-- [ ] 2.1 Disparar inicio de BGM en `startGame()` respetando si BGM está activo en settings
-- [ ] 2.2 Detener reproducción de BGM al finalizar partida (`_handleGameOver`) o al limpiar recursos (`resetGame` / dispose)
-- [ ] 2.3 Escribir pruebas unitarias con mock de `AudioService` en `test/audio_feedback_test.dart` cubriendo:
+- [x] 2.1 Disparar inicio de BGM en `startGame()` respetando si BGM está activo en settings
+- [x] 2.2 Detener reproducción de BGM al finalizar partida (`_handleGameOver`) o al limpiar recursos (`resetGame` / dispose)
+- [x] 2.3 Escribir pruebas unitarias con mock de `AudioService` en `test/audio_feedback_test.dart` cubriendo:
   - `Background music plays continuously during gameplay`
   - `Background music pauses or stops on game over or exit`
 

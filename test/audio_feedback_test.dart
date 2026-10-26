@@ -132,5 +132,52 @@ void main() {
 
       expect(mockAudio.gameOverCalls, 1);
     });
+
+    test('Background music plays continuously during gameplay', () {
+      final container = ProviderContainer(
+        overrides: [
+          audioServiceProvider.overrideWithValue(mockAudio),
+          challengeGeneratorProvider.overrideWithValue(
+            () => const WordChallenge(word: 'RED', color: Colors.blue),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(gameNotifierProvider.notifier);
+
+      expect(mockAudio.startBgmCalls, 0);
+
+      notifier.startGame();
+
+      expect(mockAudio.startBgmCalls, 1);
+      expect(mockAudio.stopBgmCalls, 0);
+    });
+
+    test('Background music pauses or stops on game over or exit', () async {
+      final container = ProviderContainer(
+        overrides: [
+          audioServiceProvider.overrideWithValue(mockAudio),
+          challengeGeneratorProvider.overrideWithValue(
+            () => const WordChallenge(word: 'RED', color: Colors.blue),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(gameNotifierProvider.notifier);
+      notifier.startGame();
+      expect(mockAudio.startBgmCalls, 1);
+
+      await notifier.stopGame();
+      expect(mockAudio.stopBgmCalls, 1);
+
+      // Starting and then resetting also stops BGM
+      notifier.startGame();
+      expect(mockAudio.startBgmCalls, 2);
+
+      notifier.resetGame();
+      expect(mockAudio.stopBgmCalls, 2);
+    });
   });
 }

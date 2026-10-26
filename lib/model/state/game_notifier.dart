@@ -28,7 +28,11 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
 
   @override
   GameSession build() {
-    ref.onDispose(() => _cancelTimer());
+    final audio = ref.read(audioServiceProvider);
+    ref.onDispose(() {
+      _cancelTimer();
+      audio.stopBgm();
+    });
     _stimulusShownAt = null;
     return const GameSession();
   }
@@ -57,7 +61,9 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
     _stimulusShownAt = null;
     final scoreToRecord = finalScore ?? state.score;
 
-    ref.read(audioServiceProvider).playGameOver();
+    final audio = ref.read(audioServiceProvider);
+    audio.stopBgm();
+    audio.playGameOver();
 
     state = state.copyWith(
       score: scoreToRecord,
@@ -83,6 +89,7 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
   /// Starts or restarts a game session.
   void startGame() {
     _cancelTimer();
+    ref.read(audioServiceProvider).startBgm();
 
     final firstChallenge = _generateChallenge();
     _stimulusShownAt = ref.read(clockProvider)();
@@ -123,6 +130,7 @@ class GameNotifier extends AutoDisposeNotifier<GameSession> {
   /// Resets the game to ready state and clears running timers.
   void resetGame() {
     _cancelTimer();
+    ref.read(audioServiceProvider).stopBgm();
     _stimulusShownAt = null;
     state = const GameSession(gameState: GameState.ready);
   }
