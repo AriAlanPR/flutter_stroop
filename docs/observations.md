@@ -51,3 +51,19 @@ Registro de decisiones técnicas, lecciones aprendidas, consideraciones de rendi
 - **Paridad estricta de pruebas:**
   - Toda funcionalidad crítica (reglas del juego, cálculo de estadísticas, almacenamiento de récord y widgets interactivos) cuenta con tests unitarios y de widgets correspondientes en `test/`.
   - Los tests de UI simulan gestos y tiempos de temporizador usando `tester.pump()` y `tester.pumpAndSettle()` respetando la inyección de providers con `ProviderScope`.
+
+---
+
+## 6. Criterio de Animaciones y Movimiento: UI Utility vs. Game Feel (Juice)
+
+Se adopta una separación clara entre la interfaz de navegación y las mecánicas activas de juego:
+
+- **Interfaz de navegación, menús y modales (`flutter-movimiento` / Emil Kowalski):**
+  - Aplica principios de micro-interacciones de producto y utilidades: micro-escalado en botones al presionar (`scale: 0.96`), aperturas amortiguadas con springs para modales (`InstructionsDialog`) y paneles (`GameOverView`).
+  - **Interrumpibilidad estricta:** Ninguna animación de navegación debe bloquear gestos de usuario ni generar colas de eventos retrasadas.
+- **Mecánicas de juego activas (Game Feel / Juicy Arcade 16-bit):**
+  - **Latencia cero en el estímulo cognitivo:** El cambio de palabra/color ante cada respuesta debe ser instantáneo (corte limpio o micro-pop de ≤ 80ms) para garantizar que los tiempos de reacción medidos en milisegundos representen fielmente el desempeño cognitivo del usuario sin interferencias de transición visual.
+  - **Técnicas de impacto arcade:**
+    - *Screen Shake:* Sacudida sutil de la pantalla ante fallos de respuesta o agotamiento del temporizador.
+    - *Palpitación de urgencia:* El contador del HUD palpita y acentúa su coloración crítica cuando el tiempo restante cae por debajo de 3 segundos.
+    - *Números flotantes y feedback de combos:* Indicadores emergentes breves de puntuación (`+10`, `Streak x3`) y chispas pixel-art en rachas de aciertos sin tapar la palabra central.

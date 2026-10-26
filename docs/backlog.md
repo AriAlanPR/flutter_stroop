@@ -26,6 +26,11 @@ Lista priorizada de tareas, mejoras y nuevas funcionalidades para el proyecto.
   - Pantalla o modal de estadísticas con gráfica de tendencia para visualizar si el jugador mejora sus tiempos de reacción con los días.
 - [ ] **Rachas de aciertos (Streaks) y multiplicadores**
   - Sistema de combos: a mayor racha de aciertos consecutivos, mayor bonificación de puntuación y efectos visuales de racha (partículas arcade).
+- [ ] **Game Feel Arcade & Feedback Visual (Juice)**
+  - Efecto de sacudida de pantalla (*screen shake*) sutil ante fallos o término de tiempo.
+  - Palpitación visual de urgencia en el temporizador del HUD al restar < 3 segundos.
+  - Indicadores emergentes flotantes de puntos y rachas (`+10`, `Streak x2`).
+  - Micro-interacciones táctiles (`scale on press: 0.96`) en botones de menús y modales según `flutter-movimiento`.
 - [ ] **Pantalla de ajustes (Settings)**
   - Configuración de tema (Claro / Oscuro / Sistema).
   - Selección de idioma (i18n: Español / Inglés).
