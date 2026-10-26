@@ -40,9 +40,35 @@ class DefaultAudioService implements AudioService {
       final p = AudioPlayer();
       try {
         p.setPlayerMode(PlayerMode.lowLatency);
+        // Ensure standard 'assets/' prefix
+        p.audioCache.prefix = 'assets/';
       } catch (_) {}
+
+      // Configure global audio context for mobile platforms so audio is audible
+      // even if the hardware ringer/silent switch is muted on iOS.
+      try {
+        AudioPlayer.global.setAudioContext(
+          AudioContext(
+            iOS: AudioContextIOS(
+              category: AVAudioSessionCategory.playback,
+              options: {
+                AVAudioSessionOptions.mixWithOthers,
+              },
+            ),
+            android: const AudioContextAndroid(
+              isSpeakerphoneOn: true,
+              stayAwake: true,
+              contentType: AndroidContentType.sonification,
+              usageType: AndroidUsageType.game,
+              audioFocus: AndroidAudioFocus.none,
+            ),
+          ),
+        );
+      } catch (_) {}
+
       return _player = p;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Error initializing AudioPlayer: $e');
       return null;
     }
   }
@@ -62,8 +88,8 @@ class DefaultAudioService implements AudioService {
       final player = _safePlayer;
       await player?.stop();
       await player?.play(AssetSource('audio/correct.wav'));
-    } catch (_) {
-      // Fail-soft
+    } catch (e) {
+      debugPrint('Error playing correct audio: $e');
     }
   }
 
@@ -75,8 +101,8 @@ class DefaultAudioService implements AudioService {
       final player = _safePlayer;
       await player?.stop();
       await player?.play(AssetSource('audio/incorrect.wav'));
-    } catch (_) {
-      // Fail-soft
+    } catch (e) {
+      debugPrint('Error playing incorrect audio: $e');
     }
   }
 
@@ -88,8 +114,8 @@ class DefaultAudioService implements AudioService {
       final player = _safePlayer;
       await player?.stop();
       await player?.play(AssetSource('audio/game_over.wav'));
-    } catch (_) {
-      // Fail-soft
+    } catch (e) {
+      debugPrint('Error playing game over audio: $e');
     }
   }
 
@@ -100,8 +126,8 @@ class DefaultAudioService implements AudioService {
       final player = _safePlayer;
       await player?.stop();
       await player?.play(AssetSource('audio/tick.wav'));
-    } catch (_) {
-      // Fail-soft
+    } catch (e) {
+      debugPrint('Error playing warning tick audio: $e');
     }
   }
 
