@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:stroop/model/game_session.dart';
 import 'package:stroop/model/state/game_notifier.dart';
+import 'package:stroop/model/state/sound_providers.dart';
 import 'package:stroop/screens/main_menu_screen.dart';
 import 'package:stroop/widgets/instructions_dialog.dart';
 
@@ -64,6 +65,18 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             style: GoogleFonts.pressStart2p(color: onSurface),
           ),
           actions: [
+            IconButton(
+              key: const Key('sound_toggle_button_game'),
+              icon: Icon(
+                ref.watch(soundSettingsProvider)
+                    ? Icons.volume_up
+                    : Icons.volume_off,
+                color: onSurface,
+              ),
+              onPressed: () {
+                ref.read(soundSettingsProvider.notifier).toggleSound();
+              },
+            ),
             IconButton(
               key: const Key('help_button'),
               icon: Icon(Icons.help_outline, color: onSurface),

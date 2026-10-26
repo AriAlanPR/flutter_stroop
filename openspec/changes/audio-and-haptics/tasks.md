@@ -27,8 +27,8 @@
 ---
 
 ## 3. Controles en UI, Widget Tests y Validación de Tema
-- [ ] 3.1 Agregar botón de alternar sonido (`Key('sound_toggle_button')`) en `MainMenuScreen`
-- [ ] 3.2 Agregar botón de alternar sonido (`Key('sound_toggle_button_game')`) en la barra superior de `GameScreen`
-- [ ] 3.3 Escribir widget test para verificar el cambio reactivo del icono de audio cubriendo:
+- [x] 3.1 Agregar botón de alternar sonido (`Key('sound_toggle_button')`) en `MainMenuScreen`
+- [x] 3.2 Agregar botón de alternar sonido (`Key('sound_toggle_button_game')`) en la barra superior de `GameScreen`
+- [x] 3.3 Escribir widget test para verificar el cambio reactivo del icono de audio cubriendo:
   - `Toggling sound in UI updates icon state`
-- [ ] 3.4 Verificar contraste visual y adaptación de los iconos en tema claro y oscuro
+- [x] 3.4 Verificar contraste visual y adaptación de los iconos en tema claro y oscuro
