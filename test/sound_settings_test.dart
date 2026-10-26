@@ -52,7 +52,7 @@ void main() {
       // Verify that an AudioService wired to this provider suppresses sound
       var playerTriggered = false;
       final audioService = DefaultAudioService(
-        player: null,
+        sfxPlayer: null,
         isSoundEnabled: () => container.read(soundSettingsProvider),
       );
 
@@ -64,6 +64,46 @@ void main() {
       await container.read(soundSettingsProvider.notifier).toggleSound();
       expect(container.read(soundSettingsProvider), isTrue);
       expect(storage.isSoundEnabled(), isTrue);
+    });
+
+    test('GameSettings persists BGM, volumes, and haptic preferences',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final storage = StorageService(prefs);
+
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final initial = container.read(gameSettingsProvider);
+      expect(initial.sfxEnabled, isTrue);
+      expect(initial.bgmEnabled, isTrue);
+      expect(initial.hapticsEnabled, isTrue);
+      expect(initial.sfxVolume, 1.0);
+      expect(initial.bgmVolume, 0.6);
+
+      // Adjust settings
+      final notifier = container.read(gameSettingsProvider.notifier);
+      await notifier.setBgmEnabled(false);
+      await notifier.setSfxVolume(0.75);
+      await notifier.setBgmVolume(0.4);
+      await notifier.setHapticsEnabled(false);
+
+      final updated = container.read(gameSettingsProvider);
+      expect(updated.bgmEnabled, isFalse);
+      expect(updated.sfxVolume, 0.75);
+      expect(updated.bgmVolume, 0.4);
+      expect(updated.hapticsEnabled, isFalse);
+
+      // Confirm values in storage
+      expect(storage.isBgmEnabled(), isFalse);
+      expect(storage.getSfxVolume(), 0.75);
+      expect(storage.getBgmVolume(), 0.4);
+      expect(storage.isHapticsEnabled(), isFalse);
     });
   });
 }

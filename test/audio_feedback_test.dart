@@ -11,6 +11,10 @@ class MockAudioService implements AudioService {
   int incorrectCalls = 0;
   int gameOverCalls = 0;
   int warningTickCalls = 0;
+  int startBgmCalls = 0;
+  int stopBgmCalls = 0;
+  double? currentSfxVolume;
+  double? currentBgmVolume;
 
   @override
   Future<void> playCorrect() async {
@@ -30,6 +34,26 @@ class MockAudioService implements AudioService {
   @override
   Future<void> playWarningTick() async {
     warningTickCalls++;
+  }
+
+  @override
+  Future<void> startBgm() async {
+    startBgmCalls++;
+  }
+
+  @override
+  Future<void> stopBgm() async {
+    stopBgmCalls++;
+  }
+
+  @override
+  Future<void> setSfxVolume(double volume) async {
+    currentSfxVolume = volume;
+  }
+
+  @override
+  Future<void> setBgmVolume(double volume) async {
+    currentBgmVolume = volume;
   }
 
   @override

@@ -8,19 +8,38 @@ abstract class AudioService {
   Future<void> playIncorrect();
   Future<void> playGameOver();
   Future<void> playWarningTick();
+  Future<void> startBgm();
+  Future<void> stopBgm();
+  Future<void> setSfxVolume(double volume);
+  Future<void> setBgmVolume(double volume);
   void dispose();
 }
 
 /// Default implementation utilizing audioplayers and system haptics.
 class DefaultAudioService implements AudioService {
-  AudioPlayer? _player;
+  AudioPlayer? _sfxPlayer;
+  AudioPlayer? _bgmPlayer;
   final bool Function() _isSoundEnabled;
+  final bool Function() _isBgmEnabled;
+  final bool Function() _isHapticsEnabled;
+  final double Function() _getSfxVolume;
+  final double Function() _getBgmVolume;
 
   DefaultAudioService({
-    AudioPlayer? player,
+    AudioPlayer? sfxPlayer,
+    AudioPlayer? bgmPlayer,
     bool Function()? isSoundEnabled,
-  })  : _player = player,
-        _isSoundEnabled = isSoundEnabled ?? (() => true);
+    bool Function()? isBgmEnabled,
+    bool Function()? isHapticsEnabled,
+    double Function()? getSfxVolume,
+    double Function()? getBgmVolume,
+  })  : _sfxPlayer = sfxPlayer,
+        _bgmPlayer = bgmPlayer,
+        _isSoundEnabled = isSoundEnabled ?? (() => true),
+        _isBgmEnabled = isBgmEnabled ?? (() => true),
+        _isHapticsEnabled = isHapticsEnabled ?? (() => true),
+        _getSfxVolume = getSfxVolume ?? (() => 1.0),
+        _getBgmVolume = getBgmVolume ?? (() => 0.6);
 
   bool get _areBindingsInitialized {
     try {
@@ -31,50 +50,64 @@ class DefaultAudioService implements AudioService {
     }
   }
 
-  AudioPlayer? get _safePlayer {
-    if (_player != null) return _player;
-    if (!_areBindingsInitialized) {
-      return null;
-    }
+  void _configureGlobalContext() {
+    try {
+      AudioPlayer.global.setAudioContext(
+        AudioContext(
+          iOS: AudioContextIOS(
+            category: AVAudioSessionCategory.playback,
+            options: {
+              AVAudioSessionOptions.mixWithOthers,
+            },
+          ),
+          android: const AudioContextAndroid(
+            isSpeakerphoneOn: true,
+            stayAwake: true,
+            contentType: AndroidContentType.sonification,
+            usageType: AndroidUsageType.game,
+            audioFocus: AndroidAudioFocus.none,
+          ),
+        ),
+      );
+    } catch (_) {}
+  }
+
+  AudioPlayer? get _safeSfxPlayer {
+    if (_sfxPlayer != null) return _sfxPlayer;
+    if (!_areBindingsInitialized) return null;
     try {
       final p = AudioPlayer();
       try {
         p.setPlayerMode(PlayerMode.lowLatency);
-        // Ensure standard 'assets/' prefix
         p.audioCache.prefix = 'assets/';
       } catch (_) {}
-
-      // Configure global audio context for mobile platforms so audio is audible
-      // even if the hardware ringer/silent switch is muted on iOS.
-      try {
-        AudioPlayer.global.setAudioContext(
-          AudioContext(
-            iOS: AudioContextIOS(
-              category: AVAudioSessionCategory.playback,
-              options: {
-                AVAudioSessionOptions.mixWithOthers,
-              },
-            ),
-            android: const AudioContextAndroid(
-              isSpeakerphoneOn: true,
-              stayAwake: true,
-              contentType: AndroidContentType.sonification,
-              usageType: AndroidUsageType.game,
-              audioFocus: AndroidAudioFocus.none,
-            ),
-          ),
-        );
-      } catch (_) {}
-
-      return _player = p;
+      _configureGlobalContext();
+      return _sfxPlayer = p;
     } catch (e) {
-      debugPrint('Error initializing AudioPlayer: $e');
+      debugPrint('Error initializing SFX AudioPlayer: $e');
+      return null;
+    }
+  }
+
+  AudioPlayer? get _safeBgmPlayer {
+    if (_bgmPlayer != null) return _bgmPlayer;
+    if (!_areBindingsInitialized) return null;
+    try {
+      final p = AudioPlayer();
+      try {
+        p.setReleaseMode(ReleaseMode.loop);
+        p.audioCache.prefix = 'assets/';
+      } catch (_) {}
+      _configureGlobalContext();
+      return _bgmPlayer = p;
+    } catch (e) {
+      debugPrint('Error initializing BGM AudioPlayer: $e');
       return null;
     }
   }
 
   Future<void> _safeHaptic(Future<void> Function() hapticAction) async {
-    if (!_areBindingsInitialized) return;
+    if (!_areBindingsInitialized || !_isHapticsEnabled()) return;
     try {
       await hapticAction();
     } catch (_) {}
@@ -85,7 +118,8 @@ class DefaultAudioService implements AudioService {
     if (!_isSoundEnabled()) return;
     await _safeHaptic(HapticFeedback.lightImpact);
     try {
-      final player = _safePlayer;
+      final player = _safeSfxPlayer;
+      await player?.setVolume(_getSfxVolume());
       await player?.stop();
       await player?.play(AssetSource('audio/correct.wav'));
     } catch (e) {
@@ -98,7 +132,8 @@ class DefaultAudioService implements AudioService {
     if (!_isSoundEnabled()) return;
     await _safeHaptic(HapticFeedback.mediumImpact);
     try {
-      final player = _safePlayer;
+      final player = _safeSfxPlayer;
+      await player?.setVolume(_getSfxVolume());
       await player?.stop();
       await player?.play(AssetSource('audio/incorrect.wav'));
     } catch (e) {
@@ -111,7 +146,8 @@ class DefaultAudioService implements AudioService {
     if (!_isSoundEnabled()) return;
     await _safeHaptic(HapticFeedback.heavyImpact);
     try {
-      final player = _safePlayer;
+      final player = _safeSfxPlayer;
+      await player?.setVolume(_getSfxVolume());
       await player?.stop();
       await player?.play(AssetSource('audio/game_over.wav'));
     } catch (e) {
@@ -123,7 +159,8 @@ class DefaultAudioService implements AudioService {
   Future<void> playWarningTick() async {
     if (!_isSoundEnabled()) return;
     try {
-      final player = _safePlayer;
+      final player = _safeSfxPlayer;
+      await player?.setVolume(_getSfxVolume());
       await player?.stop();
       await player?.play(AssetSource('audio/tick.wav'));
     } catch (e) {
@@ -132,11 +169,45 @@ class DefaultAudioService implements AudioService {
   }
 
   @override
+  Future<void> startBgm() async {
+    if (!_isBgmEnabled()) return;
+    try {
+      final player = _safeBgmPlayer;
+      await player?.setVolume(_getBgmVolume());
+      await player?.play(AssetSource('audio/bgm.wav'));
+    } catch (e) {
+      debugPrint('Error starting BGM: $e');
+    }
+  }
+
+  @override
+  Future<void> stopBgm() async {
+    try {
+      await _bgmPlayer?.stop();
+    } catch (e) {
+      debugPrint('Error stopping BGM: $e');
+    }
+  }
+
+  @override
+  Future<void> setSfxVolume(double volume) async {
+    try {
+      await _sfxPlayer?.setVolume(volume.clamp(0.0, 1.0));
+    } catch (_) {}
+  }
+
+  @override
+  Future<void> setBgmVolume(double volume) async {
+    try {
+      await _bgmPlayer?.setVolume(volume.clamp(0.0, 1.0));
+    } catch (_) {}
+  }
+
+  @override
   void dispose() {
     try {
-      _player?.dispose();
-    } catch (_) {
-      // Fail-soft
-    }
+      _sfxPlayer?.dispose();
+      _bgmPlayer?.dispose();
+    } catch (_) {}
   }
 }
