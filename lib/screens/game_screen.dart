@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:stroop/providers/game_providers.dart'; // Import your providers
-import 'package:flutter/services.dart'; // Import for keyboard input
+import 'package:stroop/model/game_session.dart';
+import 'package:stroop/model/state/game_notifier.dart';
+import 'package:stroop/screens/main_menu_screen.dart';
+import 'package:stroop/widgets/instructions_dialog.dart';
 
+/// Main entry point for the game screen.
 class GameScreen extends ConsumerStatefulWidget {
   const GameScreen({super.key});
 
@@ -13,141 +17,345 @@ class GameScreen extends ConsumerStatefulWidget {
 }
 
 class _GameScreenState extends ConsumerState<GameScreen> {
+  late final FocusNode _focusNode;
+
+  // Minimum velocity for a swipe to be registered, in pixels per second.
+  static const double _minSwipeVelocity = 100.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+
+    // Start the game as soon as the screen is initialized.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(gameNotifierProvider.notifier).startGame();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final gameState = ref.watch(gameStateProvider);
-    final score = ref.watch(scoreProvider);
-    final remainingTime = ref.watch(timerProvider);
-    final currentWord = ref.watch(currentWordProvider);
+    final gameSession = ref.watch(gameNotifierProvider);
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
 
-    // Start the game when the state is ready
-    if (gameState == GameState.ready) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(gameLogicProvider).startGame();
-      });
-    }
-
-
-
-
-    // Wrap the Scaffold with KeyboardListener
+    // The main scaffold listens for keyboard and gesture inputs.
     return KeyboardListener(
-      focusNode: FocusNode(), // Needs a FocusNode to receive keyboard events
-      autofocus: true, // Automatically focus when the widget is built
+      focusNode: _focusNode,
+      autofocus: true,
       onKeyEvent: (KeyEvent event) {
         if (event is KeyDownEvent) {
-          // Handle key down events
-          final gameLogic = ref.read(gameLogicProvider);
-          if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-            gameLogic.checkAnswer(Direction.right);
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-            gameLogic.checkAnswer(Direction.left);
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-            gameLogic.checkAnswer(Direction.up);
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-            gameLogic.checkAnswer(Direction.down);
-          }
+          _handleKeyPress(event.logicalKey, ref);
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF4F4F4),
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF2196F3), // Primary color
-          title: const Text('Stroop Game'),
-        ),
-        body: Center(
-          // Wrap the main content with GestureDetector for swipes
-          child: GestureDetector(
-            onHorizontalDragEnd: (details) {
-              if (details.primaryVelocity! > 0) {
-                // Swipe Right
-                ref.read(gameLogicProvider).checkAnswer(Direction.right);
-              } else if (details.primaryVelocity! < 0) {
-                // Swipe Left
-                ref.read(gameLogicProvider).checkAnswer(Direction.left);
-              }
-            },
-            onVerticalDragEnd: (details) {
-              if (details.primaryVelocity! > 0) {
-                // Swipe Down
-                ref.read(gameLogicProvider).checkAnswer(Direction.down);
-              } else if (details.primaryVelocity! < 0) {
-                // Swipe Up
-                ref.read(gameLogicProvider).checkAnswer(Direction.up);
-              }
-            },
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                // Score and Timer
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text('Score: $score', style: GoogleFonts.inter(fontSize: 24.0)),
-                    Text('Time: $remainingTime', style: GoogleFonts.inter(fontSize: 24.0)),
-                  ],
-                ),
-                const SizedBox(height: 50),
-                // Word Display
-                if (currentWord.isNotEmpty)
-                  Text(
-                    currentWord.keys.first,
-                    style: GoogleFonts.inter(
-                      fontSize: 72.0,
-                      color: currentWord.values.first,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                const SizedBox(height: 50),
-                // Placeholder for Instructions or Game Over Message
-                if (gameState == GameState.ready)
-                  Column(
-                    children: [
-                      Text('Tap to Start', style: GoogleFonts.inter(fontSize: 24.0)),
-                      SizedBox(height: 20),
-                      Text('Match Ink Color to Direction:', style: GoogleFonts.inter(fontSize: 20.0)),
-                      Text('Red -> Right, Green -> Left, Blue -> Up, Yellow -> Down', style: GoogleFonts.inter(fontSize: 18.0)),
-                    ],
-                  ),
-                if (gameState == GameState.gameOver)
-                  Column(
-                  children: [
-                    Text('Game Over!', style: GoogleFonts.inter(fontSize: 48.0)),
-                    Text('Final Score: $score', style: GoogleFonts.inter(fontSize: 24.0)),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        ref.read(scoreProvider.notifier).state = 0;
-                        ref.read(timerProvider.notifier).state = 30;
-                        ref.read(currentWordProvider.notifier).state = {};
-                        ref.read(gameStateProvider.notifier).state = GameState.ready;
-                        ref.read(gameLogicProvider).startGame();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2ECC71),
-                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        'Restart Game',
-                        style: GoogleFonts.inter(
-                          fontSize: 20.0,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(
+            'Stroop Focus',
+            style: GoogleFonts.pressStart2p(color: onSurface),
           ),
+          actions: [
+            IconButton(
+              key: const Key('help_button'),
+              icon: Icon(Icons.help_outline, color: onSurface),
+              onPressed: () => InstructionsDialog.show(context),
+            ),
+          ],
+        ),
+        body: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onPanEnd: (details) => _handleSwipe(details, ref),
+          child: _buildGameStateView(gameSession.gameState),
         ),
       ),
     );
   }
 
+  Widget _buildGameStateView(GameState gameState) {
+    switch (gameState) {
+      case GameState.playing:
+        return const GameView();
+      case GameState.gameOver:
+        return const GameOverView();
+      case GameState.ready:
+        return const Center(child: CircularProgressIndicator());
+    }
+  }
 
+  // --- INPUT HANDLERS ---
+
+  void _handleKeyPress(LogicalKeyboardKey key, WidgetRef ref) {
+    final notifier = ref.read(gameNotifierProvider.notifier);
+    if (key == LogicalKeyboardKey.arrowUp) {
+      notifier.checkAnswer(Direction.up);
+    } else if (key == LogicalKeyboardKey.arrowDown) {
+      notifier.checkAnswer(Direction.down);
+    } else if (key == LogicalKeyboardKey.arrowLeft) {
+      notifier.checkAnswer(Direction.left);
+    } else if (key == LogicalKeyboardKey.arrowRight) {
+      notifier.checkAnswer(Direction.right);
+    }
+  }
+
+  void _handleSwipe(DragEndDetails details, WidgetRef ref) {
+    final velocity = details.velocity.pixelsPerSecond;
+    final notifier = ref.read(gameNotifierProvider.notifier);
+
+    if (velocity.distanceSquared > (_minSwipeVelocity * _minSwipeVelocity)) {
+      if (velocity.dx.abs() > velocity.dy.abs()) {
+        if (velocity.dx < 0) {
+          notifier.checkAnswer(Direction.left);
+        } else {
+          notifier.checkAnswer(Direction.right);
+        }
+      } else {
+        if (velocity.dy < 0) {
+          notifier.checkAnswer(Direction.up);
+        } else {
+          notifier.checkAnswer(Direction.down);
+        }
+      }
+    }
+  }
+}
+
+// --- GAME STATE VIEWS ---
+
+class GameView extends ConsumerWidget {
+  const GameView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(gameNotifierProvider);
+    final challenge = session.currentChallenge;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InfoChip(label: 'Score', value: session.score.toString()),
+              InfoChip(label: 'Time', value: session.timer.toString()),
+            ],
+          ),
+        ),
+        const Spacer(),
+        if (challenge != null)
+          Text(
+            challenge.word,
+            key: const Key('challenge_word'),
+            style: GoogleFonts.pressStart2p(
+              fontSize: 48.0,
+              color: challenge.color,
+            ),
+          ),
+        const Spacer(),
+      ],
+    );
+  }
+}
+
+class GameOverView extends ConsumerWidget {
+  const GameOverView({super.key});
+
+  String _getPerformanceMessage(double accuracy) {
+    if (accuracy >= 90.0) return "Outstanding focus!";
+    if (accuracy >= 70.0) return "Great job!";
+    if (accuracy >= 50.0) return "Good effort!";
+    return "Keep practicing to improve your focus!";
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(gameNotifierProvider);
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Game Over!',
+              style: GoogleFonts.pressStart2p(fontSize: 32.0, color: onSurface),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Final Score: ${session.score}',
+              style: GoogleFonts.inter(fontSize: 24.0, color: onSurface),
+            ),
+            if (session.isNewHighScore) ...[
+              const SizedBox(height: 12),
+              Text(
+                'NEW HIGH SCORE!',
+                key: const Key('new_high_score_banner'),
+                style: GoogleFonts.pressStart2p(
+                  fontSize: 16.0,
+                  color: const Color(0xFFFFD700),
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+            Text(
+              'Accuracy: ${session.accuracy.toStringAsFixed(1)}%',
+              style: GoogleFonts.inter(fontSize: 18.0, color: onSurface),
+            ),
+            const SizedBox(height: 16),
+            // Average Reaction Time Chip
+            Container(
+              key: const Key('avg_reaction_time_chip'),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Avg Time: ${session.averageReactionTimeMs}ms',
+                style: GoogleFonts.inter(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w600,
+                  color: onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Cognitive Congruency Breakdown
+            Container(
+              key: const Key('congruency_breakdown_chip'),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Congruent: ${session.congruentAccuracy.toStringAsFixed(1)}%',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w500,
+                      color: onSurface,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text(
+                      '|',
+                      style: TextStyle(
+                        color: onSurface.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'Incongruent: ${session.incongruentAccuracy.toStringAsFixed(1)}%',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w500,
+                      color: onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              _getPerformanceMessage(session.accuracy),
+              style: GoogleFonts.inter(
+                fontSize: 16.0,
+                fontStyle: FontStyle.italic,
+                color: onSurface.withValues(alpha: 0.9),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 36),
+            ElevatedButton(
+              key: const Key('restart_game_button'),
+              onPressed: () =>
+                  ref.read(gameNotifierProvider.notifier).startGame(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.secondary,
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+              ),
+              child: Text(
+                'Restart Game',
+                style: GoogleFonts.pressStart2p(
+                  fontSize: 16.0,
+                  color: theme.colorScheme.onSecondary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextButton(
+              key: const Key('main_menu_button'),
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const MainMenuScreen()),
+                  (Route<dynamic> route) => false,
+                );
+              },
+              child: Text(
+                'Main Menu',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  color: onSurface,
+                  decoration: TextDecoration.underline,
+                  decorationColor: onSurface,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- UI HELPER WIDGETS ---
+
+class InfoChip extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const InfoChip({required this.label, required this.value, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+
+    return Column(
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: GoogleFonts.inter(
+            fontSize: 14.0,
+            fontWeight: FontWeight.bold,
+            color: onSurface.withValues(alpha: 0.7),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.pressStart2p(
+            fontSize: 28.0,
+            color: onSurface,
+          ),
+        ),
+      ],
+    );
+  }
 }

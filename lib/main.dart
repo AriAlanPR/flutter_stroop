@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:stroop/model/state/score_providers.dart';
 import 'package:stroop/screens/main_menu_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+
   runApp(
-    const ProviderScope(child: MyApp()),
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: const MyApp(),
+    ),
   );
 }
 
@@ -17,18 +27,21 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Stroop Game',
+      title: 'Stroop Focus',
       theme: ThemeData(
-        textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
+        textTheme:
+            GoogleFonts.pressStart2pTextTheme(Theme.of(context).textTheme),
+        scaffoldBackgroundColor: const Color(0xFF3A3A3A), // Dark gray background
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2196F3), // Primary color: Blue
-          primary: const Color(0xFF2196F3), // Primary color: Blue
-          secondary: const Color(0xFF2ECC71), // Accent color: Emerald green
+          seedColor: const Color(0xFF6200EE), // Primary color: Deep Purple
+          primary: const Color(0xFF6200EE),
+          secondary: const Color(0xFF03DAC6), // Accent color: Teal
+          brightness: Brightness.dark, // Use a dark theme as the base
         ),
-        scaffoldBackgroundColor: const Color(0xFFF4F4F4), // Background color: Light gray
         useMaterial3: true,
       ),
       home: const MainMenuScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

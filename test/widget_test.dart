@@ -1,30 +1,28 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:stroop/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('MainMenuScreen smoke test renders title and action buttons',
+      (WidgetTester tester) async {
+    // Build our app wrapped with ProviderScope and trigger a frame.
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MyApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify that the title 'Stroop Focus' renders
+    expect(find.text('Stroop Focus'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Verify that the action buttons render with expected keys and text
+    expect(find.byKey(const Key('play_button')), findsOneWidget);
+    expect(find.text('Play'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.byKey(const Key('how_to_play_button')), findsOneWidget);
+    expect(find.text('How to Play'), findsOneWidget);
   });
 }
